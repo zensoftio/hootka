@@ -94,7 +94,7 @@ Transfer/sec:      4.30MB
 
 ### Overview
 
-![Diagram](performance-diagram.png)
+![Diagram](docs/performance-diagram.png)
 
 So, this stack in 2.8 times faster than Undertow and Webflux and in 3.18 times faster than Tomcat.
 
