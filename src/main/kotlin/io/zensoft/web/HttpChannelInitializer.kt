@@ -1,4 +1,4 @@
-package io.zensoft.loc.web
+package io.zensoft.web
 
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.socket.SocketChannel

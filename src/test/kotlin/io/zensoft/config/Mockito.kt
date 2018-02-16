@@ -1,4 +1,4 @@
-package io.zensoft.loc.config
+package io.zensoft.config
 
 import org.mockito.Mockito
 

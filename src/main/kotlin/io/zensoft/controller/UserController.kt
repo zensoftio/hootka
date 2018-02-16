@@ -1,8 +1,8 @@
-package io.zensoft.loc.controller
+package io.zensoft.controller
 
 import io.netty.handler.codec.http.FullHttpRequest
-import io.zensoft.loc.annotation.RequestMapping
-import io.zensoft.loc.domain.UserDto
+import io.zensoft.annotation.RequestMapping
+import io.zensoft.domain.UserDto
 import org.springframework.stereotype.Controller
 
 @Controller

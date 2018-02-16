@@ -1,4 +1,4 @@
-package io.zensoft.loc.domain
+package io.zensoft.domain
 
 import org.springframework.util.DigestUtils
 

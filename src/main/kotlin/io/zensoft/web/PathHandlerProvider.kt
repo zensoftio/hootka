@@ -1,7 +1,7 @@
-package io.zensoft.loc.web
+package io.zensoft.web
 
 import io.netty.handler.codec.http.FullHttpRequest
-import io.zensoft.loc.annotation.RequestMapping
+import io.zensoft.annotation.RequestMapping
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
 import org.springframework.stereotype.Controller

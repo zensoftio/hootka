@@ -1,4 +1,4 @@
-package io.zensoft.loc.web
+package io.zensoft.web
 
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.ChannelOption

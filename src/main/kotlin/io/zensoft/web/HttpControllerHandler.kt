@@ -1,4 +1,4 @@
-package io.zensoft.loc.web
+package io.zensoft.web
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.netty.buffer.Unpooled.wrappedBuffer
