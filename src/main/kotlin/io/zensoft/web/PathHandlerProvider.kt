@@ -1,19 +1,22 @@
 package io.zensoft.web
 
 import io.netty.handler.codec.http.FullHttpRequest
+import io.zensoft.annotation.HttpBody
 import io.zensoft.annotation.RequestMapping
+import io.zensoft.web.support.HttpHandlerMetaInfo
+import io.zensoft.web.support.HttpMethod
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
 import org.springframework.stereotype.Controller
 import java.util.*
 import javax.annotation.PostConstruct
 import kotlin.reflect.full.*
-import kotlin.reflect.jvm.javaMethod
+import kotlin.reflect.jvm.javaType
 
 @Component
 class PathHandlerProvider(private val context: ApplicationContext) {
 
-    private val storage = TreeMap<String, Function1<FullHttpRequest, Any?>>()
+    private val storage = TreeMap<String, HttpHandlerMetaInfo>()
 
     @PostConstruct
     private fun init() {
@@ -25,32 +28,23 @@ class PathHandlerProvider(private val context: ApplicationContext) {
                 val pathAnnotation = function.findAnnotation<RequestMapping>() ?: continue
                 val path = pathAnnotation.value
 
-                val parameters = function.valueParameters
-                val parameter = parameters.first()
-                if (parameters.size > 1 || !parameter.type.isSubtypeOf(FullHttpRequest::class.createType())) {
-                    throw IllegalStateException("Incorrect parameter type of " +
-                            "${function.javaMethod!!.declaringClass.name}.${function.name}")
-                }
+                val parameters = function.parameters
+                val entityType = parameters.find { it.findAnnotation<HttpBody>() != null }?.
+                        type?.javaType as? Class<*>
 
                 if (storage.containsKey(pathAnnotation.value)) {
                     throw IllegalStateException("Mapping $path is already exists.")
                 } else {
-                    storage[path] = { request ->
-                        function.call(bean, request)
-                    }
+                    storage[path] = HttpHandlerMetaInfo(bean, function, path, pathAnnotation.method, entityType)
                 }
             }
         }
     }
 
-    fun getHandler(request: FullHttpRequest) : ((FullHttpRequest) -> Any?)? {
-        for (entry in storage) {
-            if (request.uri().startsWith(entry.key)) {
-                return entry.value
-            }
-        }
-
-        return null
+    fun getHandler(request: FullHttpRequest) : HttpHandlerMetaInfo? {
+        val handler = storage[request.uri()] ?: return null
+        if(handler.httpMethod != HttpMethod.valueOf(request.method().name())) return null
+        return handler
     }
 
 }

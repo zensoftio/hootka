@@ -8,7 +8,9 @@ import io.netty.handler.codec.http.HttpResponseEncoder
 import org.springframework.stereotype.Component
 
 @Component
-class HttpChannelInitializer(val httpControllerHandler: HttpControllerHandler) : ChannelInitializer<SocketChannel>() {
+class HttpChannelInitializer(
+        val httpControllerHandler: HttpControllerHandler
+) : ChannelInitializer<SocketChannel>() {
 
     override fun initChannel(ch: SocketChannel) {
         val pipeline = ch.pipeline()
