@@ -8,19 +8,21 @@ import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.http.*
 import io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON
 import io.netty.handler.codec.http.HttpHeaderValues.TEXT_PLAIN
+import io.zensoft.utils.NumberUtils
 import io.zensoft.web.support.HttpMethod
 import io.zensoft.web.support.HttpResponse
-import io.zensoft.web.support.RequestFilterChain
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
+import org.springframework.util.AntPathMatcher
 import java.nio.charset.Charset
 
 @ChannelHandler.Sharable
 @Component
 class HttpControllerHandler(
-        private val pathHandlerProvider: PathHandlerProvider,
-        private val requestFilterChain: RequestFilterChain
+        private val pathHandlerProvider: PathHandlerProvider
 ) : SimpleChannelInboundHandler<FullHttpRequest>() {
+
+    private val pathMatcher = AntPathMatcher()
 
     companion object {
         private val log = LoggerFactory.getLogger(this::class.java)
@@ -32,10 +34,9 @@ class HttpControllerHandler(
         val response = HttpResponse()
 
         try {
-            if (requestFilterChain.isRequestAcceptable(request, response)) {
-                handleRequest(request, response)
-            }
+            handleRequest(request, response)
         } catch (e: Exception) {
+            e.printStackTrace()
             response.modify(HttpResponseStatus.INTERNAL_SERVER_ERROR, TEXT_PLAIN, e.message ?: "")
         }
 
@@ -52,11 +53,17 @@ class HttpControllerHandler(
             response.modify(HttpResponseStatus.NOT_FOUND, TEXT_PLAIN, "Http Method ${request.method().name()} is not supported")
             return
         }
-        val args = if(handler.entityType != null) {
+        var args = if(handler.entityType != null) {
             arrayOf(jacksonObjectMapper.readValue(request.content().toString(charset), handler.entityType))
         } else {
             emptyArray()
         }
+        val parsedPatterns = pathMatcher.extractUriTemplateVariables(handler.path, request.uri())
+        handler.pathVariables.forEach {
+            val value = NumberUtils.parseNumber(parsedPatterns[it.key]!!, it.value)
+            args = args.plus(value)
+        }
+
         val result = handler.execute(*args)
 
         if (result is String) {
