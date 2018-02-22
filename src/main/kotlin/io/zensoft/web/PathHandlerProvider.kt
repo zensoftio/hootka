@@ -36,11 +36,11 @@ class PathHandlerProvider(
 
                 val parameters = function.parameters
                 val pathVariables = parameters.filter { it.findAnnotation<PathVariable>() != null }
-                val pathVariableMapping = mutableMapOf<String, Class<*>>()
+                val pathVariableMapping = linkedMapOf<String, Class<*>>()
                 for (pathVariable in pathVariables) {
                     val annotation = pathVariable.findAnnotation<PathVariable>()!!
                     val patternName = if (annotation.value.isEmpty()) pathVariable.name else annotation.value
-                    pathVariableMapping.put("$patternName", pathVariable.type.javaType as Class<*>)
+                    pathVariableMapping.put(patternName!!, pathVariable.type.javaType as Class<*>)
                 }
 
                 val entityType = parameters.find { it.findAnnotation<HttpBody>() != null }?.

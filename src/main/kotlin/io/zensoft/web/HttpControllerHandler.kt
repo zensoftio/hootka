@@ -8,6 +8,9 @@ import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.http.*
 import io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON
 import io.netty.handler.codec.http.HttpHeaderValues.TEXT_PLAIN
+import io.netty.handler.codec.http.cookie.Cookie
+import io.netty.handler.codec.http.cookie.ServerCookieEncoder
+import io.netty.util.AttributeKey
 import io.zensoft.utils.NumberUtils
 import io.zensoft.web.support.HttpMethod
 import io.zensoft.web.support.HttpResponse
@@ -78,6 +81,11 @@ class HttpControllerHandler(
         val buf = wrappedBuffer((response.content as String).toByteArray())
         val result = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, response.status, buf)
 
+        val channel = ctx.channel()
+        val attribute = AttributeKey.valueOf<Cookie>("session_id")
+        val sessionCookie = if (channel.hasAttr(attribute)) channel.attr(attribute).get() else null
+
+        sessionCookie?.let { result.headers().set(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.STRICT.encode(sessionCookie)) }
         result.headers().set(HttpHeaderNames.CONTENT_LENGTH, buf.readableBytes())
         result.headers().set(HttpHeaderNames.CONTENT_TYPE, response.mimeType.toString() + "; charset=UTF-8")
         HttpUtil.setKeepAlive(result, true)
@@ -85,6 +93,9 @@ class HttpControllerHandler(
         ctx.writeAndFlush(result)
     }
 
+    /**
+     * Marked deprecated as method moved from {@link ChannelHandler} to it's child interface {@link ChannelInboundHandler}
+     */
     @Throws(Exception::class)
     override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
         log.error("Something went wrong", cause)
