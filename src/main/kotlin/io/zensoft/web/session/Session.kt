@@ -1,10 +1,11 @@
-package io.zensoft.web
+package io.zensoft.web.session
 
-import java.util.*
+import java.time.Instant
 
 class Session(
-        val id: String,
-        private val attributes: MutableMap<String, Any>
+    val id: String,
+    var lastActive: Instant = Instant.now(),
+    private val attributes: MutableMap<String, Any> = mutableMapOf()
 ) {
 
     fun getAttribute(key: String): Any? = attributes[key]

@@ -8,17 +8,18 @@ import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.cookie.Cookie
 import io.netty.handler.codec.http.cookie.DefaultCookie
 import io.netty.handler.codec.http.cookie.ServerCookieDecoder
-import io.netty.handler.codec.http.cookie.ServerCookieEncoder
 import io.netty.util.AttributeKey
+import io.zensoft.web.session.SessionPool
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.util.*
 
 @ChannelHandler.Sharable
 @Component
-class HttpRequestFilterHandler(
+class SessionHandler(
         private @Value("\${server.session.cookie.name:session_id}") val sessionCookieName: String,
-        private @Value("\${server.session.cookie.max-age}") val sessionTimeout: Long
+        private @Value("\${server.session.cookie.max-age}") val sessionTimeout: Long,
+        private val sessionPool: SessionPool
 ): ChannelInboundHandlerAdapter() {
 
     private val sessionAttribute = AttributeKey.newInstance<Cookie>("session_id")
@@ -26,12 +27,13 @@ class HttpRequestFilterHandler(
     override fun channelRead(ctx: ChannelHandlerContext, msg: Any) {
         val request = msg as FullHttpRequest
         val cookies = getCookies(request)
-        var sessionCookie = cookies?.get(sessionCookieName)?.first()
-        if(sessionCookie == null) {
-            sessionCookie = DefaultCookie(sessionCookieName, UUID.randomUUID().toString())
+        var sessionCookie = cookies?.get(sessionCookieName)?.first() //TODO
+        if(sessionCookie == null || sessionPool.getSession(sessionCookie.value()) == null) {
+            val sessionId = UUID.randomUUID().toString()
+            sessionPool.createSession(sessionId)
+            sessionCookie = DefaultCookie(sessionCookieName, sessionId)
             sessionCookie.isHttpOnly = true
             sessionCookie.setMaxAge(sessionTimeout)
-            request.headers().add(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.STRICT.encode(sessionCookie))
             ctx.channel().attr(sessionAttribute).set(sessionCookie)
         }
         ctx.fireChannelRead(request)

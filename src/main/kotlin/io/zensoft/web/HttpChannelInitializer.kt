@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component
 @Component
 class HttpChannelInitializer(
         val httpControllerHandler: HttpControllerHandler,
-        val httpRequestFilterHandler: HttpRequestFilterHandler
+        val sessionHandler: SessionHandler
 ) : ChannelInitializer<SocketChannel>() {
 
     override fun initChannel(ch: SocketChannel) {
@@ -18,7 +18,7 @@ class HttpChannelInitializer(
         pipeline.addLast(HttpRequestDecoder())
         pipeline.addLast(HttpObjectAggregator(1048576))
         pipeline.addLast(HttpResponseEncoder())
-        pipeline.addLast(httpRequestFilterHandler)
+        pipeline.addLast(sessionHandler)
         pipeline.addLast(httpControllerHandler)
     }
 
