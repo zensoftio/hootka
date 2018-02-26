@@ -1,10 +1,7 @@
-package io.zensoft.web.session
-
-import java.time.Instant
+package io.zensoft.web.support
 
 class Session(
     val id: String,
-    var lastActive: Instant = Instant.now(),
     private val attributes: MutableMap<String, Any> = mutableMapOf()
 ) {
 
