@@ -73,6 +73,22 @@ Requests/sec:  10193.27
 Transfer/sec:      1.73MB
 ```
 
+### Ktor
+```
+Running 30s test @ http://192.168.88.104:8080/api/user/current
+  12 threads and 400 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    38.04ms   26.10ms 287.62ms   81.12%
+    Req/Sec     0.93k   167.77     7.45k    89.80%
+  Latency Distribution
+     50%   25.94ms
+     75%   48.67ms
+     90%   78.13ms
+     99%  109.79ms
+  333816 requests in 30.10s, 80.22MB read
+Requests/sec:  11090.80
+Transfer/sec:      2.67MB
+```
 
 ### This
 
