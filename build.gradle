@@ -21,6 +21,9 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter')
     compile("io.netty:netty-all:${nettyVersion}")
 
+    // Utilities
+    compile('com.github.ben-manes.caffeine:caffeine:2.6.2')
+
     // Kotlin
     compile("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}")
     compile("org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}")
