@@ -1,13 +1,12 @@
 package io.zensoft.web
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled.wrappedBuffer
 import io.netty.channel.ChannelHandler
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.http.*
-import io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON
-import io.netty.handler.codec.http.HttpHeaderValues.TEXT_PLAIN
 import io.netty.handler.codec.http.HttpResponseStatus.*
 import io.netty.handler.codec.http.cookie.Cookie
 import io.netty.handler.codec.http.cookie.ServerCookieEncoder
@@ -15,10 +14,10 @@ import io.netty.util.AttributeKey
 import io.zensoft.annotation.PathVariable
 import io.zensoft.annotation.RequestBody
 import io.zensoft.utils.NumberUtils
-import io.zensoft.web.support.HttpHandlerMetaInfo
+import io.zensoft.web.support.*
 import io.zensoft.web.support.HttpMethod
 import io.zensoft.web.support.HttpResponse
-import io.zensoft.web.support.Session
+import io.zensoft.web.support.MimeType.*
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.springframework.util.AntPathMatcher
@@ -46,7 +45,7 @@ class HttpControllerHandler(
             handleRequest(request, response)
         } catch (e: Exception) {
             e.printStackTrace()
-            response.modify(INTERNAL_SERVER_ERROR, TEXT_PLAIN, e.message ?: "")
+            response.modify(INTERNAL_SERVER_ERROR, TEXT_PLAIN, toByteBuf(e.message ?: ""))
         }
 
         writeResponse(ctx, response)
@@ -56,10 +55,10 @@ class HttpControllerHandler(
         var responseBody = ""
         val handler = pathHandlerProvider.getHandler(request)
         if (handler == null) {
-            response.modify(NOT_FOUND, TEXT_PLAIN, "Not found")
+            response.modify(NOT_FOUND, TEXT_PLAIN, wrappedBuffer("Not found".toByteArray()))
             return
         } else if(handler.httpMethod != HttpMethod.valueOf(request.method().name())) {
-            response.modify(METHOD_NOT_ALLOWED, TEXT_PLAIN, "Http Method ${request.method()} is not supported")
+            response.modify(METHOD_NOT_ALLOWED, TEXT_PLAIN, toByteBuf("Http Method ${request.method()} is not supported"))
             return
         }
 
@@ -70,11 +69,11 @@ class HttpControllerHandler(
         } else if (result != null) {
             responseBody = jacksonObjectMapper.writeValueAsString(result)
         }
-        response.modify(OK, APPLICATION_JSON, responseBody)
+        response.modify(OK, APPLICATION_JSON, toByteBuf(responseBody))
     }
 
     private fun writeResponse(ctx: ChannelHandlerContext, response: HttpResponse) {
-        val buf = wrappedBuffer((response.content as String).toByteArray())
+        val buf = response.content
         val result = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, response.status, buf)
 
         val channel = ctx.channel()
@@ -83,8 +82,8 @@ class HttpControllerHandler(
         channel.attr(attribute).get()?.let {
             result.headers().set(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.STRICT.encode(it))
         }
-        result.headers().set(HttpHeaderNames.CONTENT_LENGTH, buf.readableBytes())
-        result.headers().set(HttpHeaderNames.CONTENT_TYPE, response.mimeType.toString() + "; charset=UTF-8")
+        result.headers().set(HttpHeaderNames.CONTENT_LENGTH, buf!!.readableBytes())
+        result.headers().set(HttpHeaderNames.CONTENT_TYPE, response.mimeType!!.value.toString() + "; charset=UTF-8")
         HttpUtil.setKeepAlive(result, true)
 
         ctx.writeAndFlush(result)
@@ -100,7 +99,7 @@ class HttpControllerHandler(
                 else -> {
                     when(it.value.clazz) {
                         FullHttpRequest::class.java -> request
-                        Session::class.java -> sessionHandler.findSession(request)!!
+                        Session::class.java -> sessionHandler.findSession(request) ?: Session("id")
                         else -> throw IllegalArgumentException("Unknown context parameter with type ${it.value.clazz}")
                     }
                 }
@@ -111,14 +110,15 @@ class HttpControllerHandler(
     }
 
     /**
-     * Marked deprecated as method moved from {@link ChannelHandler} to it's child interface {@link ChannelInboundHandler}
+     * Marked deprecated as method moved from [io.netty.channel.ChannelHandler] to it's child interface [io.netty.channel.ChannelInboundHandler]
      */
     @Throws(Exception::class)
+    @Suppress("OverridingDeprecatedMember")
     override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
         log.error("Something went wrong", cause)
-        writeResponse(ctx, HttpResponse(TEXT_PLAIN, INTERNAL_SERVER_ERROR, null, cause.message ?: ""))
+        writeResponse(ctx, HttpResponse(TEXT_PLAIN, INTERNAL_SERVER_ERROR, null, toByteBuf(cause.message ?: "")))
     }
 
-
+    private fun toByteBuf(message: String): ByteBuf = wrappedBuffer(message.toByteArray())
 
 }

@@ -44,8 +44,8 @@ class SessionHandler(
     }
 
     fun findSession(request: FullHttpRequest): Session? {
-        val sessionCookie = getCookies(request).find { it.name() == sessionCookieName }!!
-        return sessionPool.getIfPresent(sessionCookie.value())
+        val sessionCookie = getCookies(request).find { it.name() == sessionCookieName }
+        return sessionCookie?.let { sessionPool.getIfPresent(it.value()) }
     }
 
     private fun getCookies(request: FullHttpRequest): MutableSet<Cookie> {
