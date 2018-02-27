@@ -22,9 +22,9 @@ import javax.annotation.PostConstruct
 @ChannelHandler.Sharable
 @Component
 class SessionHandler(
-        @Value("\${server.session.cookie.name:session_id}") private val sessionCookieName: String,
-        @Value("\${server.session.cookie.max-age}") private val sessionTimeout: Long
-): ChannelInboundHandlerAdapter() {
+    @Value("\${server.session.cookie.name:session_id}") private val sessionCookieName: String,
+    @Value("\${server.session.cookie.max-age}") private val sessionTimeout: Long
+) : ChannelInboundHandlerAdapter() {
 
     private lateinit var sessionPool: Cache<String, Session>
 
@@ -34,12 +34,12 @@ class SessionHandler(
         val request = msg as FullHttpRequest
         val cookies = getCookies(request)
         var sessionCookie = cookies.find { it.name() == sessionCookieName }
-        if(sessionCookie == null || sessionPool.getIfPresent(sessionCookie.value()) == null) {
+        if (sessionCookie == null || sessionPool.getIfPresent(sessionCookie.value()) == null) {
             sessionCookie = createSessionCookie()
             cookies.add(sessionCookie)
             request.headers().set(HttpHeaderNames.COOKIE, ServerCookieEncoder.STRICT.encode(cookies))
-            ctx.channel().attr(sessionAttribute).set(sessionCookie)
         }
+        ctx.channel().attr(sessionAttribute).set(sessionCookie)
         ctx.fireChannelRead(request)
     }
 
@@ -49,9 +49,9 @@ class SessionHandler(
     }
 
     private fun getCookies(request: FullHttpRequest): MutableSet<Cookie> {
-        val value = request.headers().get(HttpHeaderNames.COOKIE)
+        val value = request.headers().getAll(HttpHeaderNames.COOKIE)
         return if (value != null) {
-            ServerCookieDecoder.STRICT.decode(value)
+            ServerCookieDecoder.STRICT.decode(value.first())
         } else {
             mutableSetOf()
         }

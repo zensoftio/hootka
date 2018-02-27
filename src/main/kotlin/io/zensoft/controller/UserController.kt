@@ -23,4 +23,9 @@ class UserController {
         return request
     }
 
+    @RequestMapping(value = "/fail", method = HttpMethod.GET)
+    fun fail() {
+        throw IllegalArgumentException()
+    }
+
 }

@@ -21,13 +21,14 @@ import io.zensoft.web.support.MimeType.*
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.springframework.util.AntPathMatcher
+import java.lang.reflect.InvocationTargetException
 import java.nio.charset.Charset
 
 @ChannelHandler.Sharable
 @Component
 class HttpControllerHandler(
-        private val pathHandlerProvider: PathHandlerProvider,
-        private val sessionHandler: SessionHandler
+    private val pathHandlerProvider: PathHandlerProvider,
+    private val sessionHandler: SessionHandler
 ) : SimpleChannelInboundHandler<FullHttpRequest>() {
 
     private val pathMatcher = AntPathMatcher()
@@ -43,21 +44,38 @@ class HttpControllerHandler(
 
         try {
             handleRequest(request, response)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            response.modify(INTERNAL_SERVER_ERROR, TEXT_PLAIN, toByteBuf(e.message ?: ""))
+        } catch (ex: InvocationTargetException) {
+            handleException(ex.targetException!!, request, response)
         }
 
         writeResponse(ctx, response)
     }
 
+    private fun handleException(exception: Throwable, request: FullHttpRequest, response: HttpResponse) {
+        var responseBody = ""
+        val handler = pathHandlerProvider.getExceptionHandler(exception::class)
+        if (handler != null) {
+            val args = createExceptionHandlerArguments(handler, request, exception)
+            val result = handler.execute(*args)
+            if (result is String) {
+                responseBody = result
+            } else if (result != null) {
+                responseBody = jacksonObjectMapper.writeValueAsString(result)
+            }
+            response.modify(handler.status.value, handler.contentType, toByteBuf(responseBody))
+        } else {
+            response.modify(INTERNAL_SERVER_ERROR, TEXT_PLAIN, toByteBuf(exception.message ?: ""))
+        }
+    }
+
     private fun handleRequest(request: FullHttpRequest, response: HttpResponse) {
         var responseBody = ""
-        val handler = pathHandlerProvider.getHandler(request)
+        request.headers().get(HttpHeaderNames.ACCEPT)
+        val handler = pathHandlerProvider.getMethodHandler(request)
         if (handler == null) {
             response.modify(NOT_FOUND, TEXT_PLAIN, wrappedBuffer("Not found".toByteArray()))
             return
-        } else if(handler.httpMethod != HttpMethod.valueOf(request.method().name())) {
+        } else if (handler.httpMethod != HttpMethod.valueOf(request.method().name())) {
             response.modify(METHOD_NOT_ALLOWED, TEXT_PLAIN, toByteBuf("Http Method ${request.method()} is not supported"))
             return
         }
@@ -69,7 +87,7 @@ class HttpControllerHandler(
         } else if (result != null) {
             responseBody = jacksonObjectMapper.writeValueAsString(result)
         }
-        response.modify(OK, APPLICATION_JSON, toByteBuf(responseBody))
+        response.modify(handler.status.value, handler.contentType, toByteBuf(responseBody))
     }
 
     private fun writeResponse(ctx: ChannelHandlerContext, response: HttpResponse) {
@@ -91,18 +109,37 @@ class HttpControllerHandler(
 
     private fun createHandlerArguments(handler: HttpHandlerMetaInfo, request: FullHttpRequest): Array<Any> {
         val args = mutableListOf<Any>()
-        val parsedPatterns = pathMatcher.extractUriTemplateVariables(handler.path, request.uri())
-        handler.pathVariables.forEach {
-            val value = when(it.value.annotation) {
-                is RequestBody -> { jacksonObjectMapper.readValue(request.content().toString(charset), it.value.clazz) }
-                is PathVariable -> { NumberUtils.parseNumber(parsedPatterns[it.key]!!, it.value.clazz) }
+        val pathVariables = pathMatcher.extractUriTemplateVariables(handler.path, request.uri())
+        handler.parameters.forEach {
+            val value = when (it.value.annotation) {
+                is RequestBody -> {
+                    jacksonObjectMapper.readValue(request.content().toString(charset), it.value.clazz)
+                }
+                is PathVariable -> {
+                    NumberUtils.parseNumber(pathVariables[it.key]!!, it.value.clazz)
+                }
                 else -> {
-                    when(it.value.clazz) {
-                        FullHttpRequest::class.java -> request
-                        Session::class.java -> sessionHandler.findSession(request) ?: Session("id")
+                    when {
+                        it.value.clazz == FullHttpRequest::class.java -> request
+                        it.value.clazz == Session::class.java -> sessionHandler.findSession(request) ?:
+                            throw IllegalStateException("Session not found")
                         else -> throw IllegalArgumentException("Unknown context parameter with type ${it.value.clazz}")
                     }
                 }
+            }
+            args.add(value)
+        }
+        return args.toTypedArray()
+    }
+
+    fun createExceptionHandlerArguments(handler: HttpHandlerMetaInfo, request: FullHttpRequest, exception: Throwable): Array<Any> {
+        val args = mutableListOf<Any>()
+        handler.parameters.forEach {
+            val value = when {
+                Throwable::class.java.isAssignableFrom(it.value.clazz) -> exception
+                it.value.clazz == FullHttpRequest::class.java -> request
+                it.value.clazz == Session::class.java -> sessionHandler.findSession(request) ?: Session("id")
+                else -> throw IllegalArgumentException("Unknown context parameter with type ${it.value.clazz}")
             }
             args.add(value)
         }
