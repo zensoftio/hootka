@@ -38,8 +38,8 @@ class SessionHandler(
             sessionCookie = createSessionCookie()
             cookies.add(sessionCookie)
             request.headers().set(HttpHeaderNames.COOKIE, ServerCookieEncoder.STRICT.encode(cookies))
+            ctx.channel().attr(sessionAttribute).set(sessionCookie)
         }
-        ctx.channel().attr(sessionAttribute).set(sessionCookie)
         ctx.fireChannelRead(request)
     }
 
@@ -49,9 +49,9 @@ class SessionHandler(
     }
 
     private fun getCookies(request: FullHttpRequest): MutableSet<Cookie> {
-        val value = request.headers().getAll(HttpHeaderNames.COOKIE)
+        val value = request.headers().get(HttpHeaderNames.COOKIE)
         return if (value != null) {
-            ServerCookieDecoder.STRICT.decode(value.first())
+            ServerCookieDecoder.STRICT.decode(value)
         } else {
             mutableSetOf()
         }

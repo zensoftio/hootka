@@ -73,6 +73,9 @@ class PathHandlerProvider(
                 val parameterMapping = mapHandlerParameters(function)
                 val handlerMetaInfo = HttpHandlerMetaInfo(advice, function, parameterMapping)
                 for (exceptionType in annotation.values) {
+                    if(exceptionHandlers.containsKey(exceptionType)) {
+                        throw IllegalStateException("Only one handler should be applied on $exceptionType")
+                    }
                     exceptionHandlers[exceptionType] = handlerMetaInfo
                 }
             }

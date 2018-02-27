@@ -41,7 +41,6 @@ class HttpControllerHandler(
 
     override fun channelRead0(ctx: ChannelHandlerContext, request: FullHttpRequest) {
         val response = HttpResponse()
-
         try {
             handleRequest(request, response)
         } catch (ex: InvocationTargetException) {
@@ -51,31 +50,30 @@ class HttpControllerHandler(
         writeResponse(ctx, response)
     }
 
-    private fun handleException(exception: Throwable, request: FullHttpRequest, response: HttpResponse) {
-        var responseBody = ""
-        val handler = pathHandlerProvider.getExceptionHandler(exception::class)
-        if (handler != null) {
-            val args = createExceptionHandlerArguments(handler, request, exception)
-            val result = handler.execute(*args)
-            if (result is String) {
-                responseBody = result
-            } else if (result != null) {
-                responseBody = jacksonObjectMapper.writeValueAsString(result)
-            }
-            response.modify(handler.status.value, handler.contentType, toByteBuf(responseBody))
-        } else {
-            response.modify(INTERNAL_SERVER_ERROR, TEXT_PLAIN, toByteBuf(exception.message ?: ""))
-        }
+    private fun writeResponse(ctx: ChannelHandlerContext, response: HttpResponse) {
+        val buf = response.content
+        val result = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, response.status, buf)
+
+        val channel = ctx.channel()
+        val attribute = AttributeKey.valueOf<Cookie>("session_id")
+        val createdSession = channel.attr(attribute).getAndSet(null)
+        createdSession?.let { result.headers().set(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.STRICT.encode(it)) }
+
+        result.headers().set(HttpHeaderNames.CONTENT_LENGTH, buf!!.readableBytes())
+        result.headers().set(HttpHeaderNames.CONTENT_TYPE, response.mimeType!!.value.toString() + "; charset=UTF-8")
+        HttpUtil.setKeepAlive(result, true)
+
+        ctx.writeAndFlush(result)
     }
 
     private fun handleRequest(request: FullHttpRequest, response: HttpResponse) {
         var responseBody = ""
-        request.headers().get(HttpHeaderNames.ACCEPT)
         val handler = pathHandlerProvider.getMethodHandler(request)
         if (handler == null) {
             response.modify(NOT_FOUND, TEXT_PLAIN, wrappedBuffer("Not found".toByteArray()))
             return
-        } else if (handler.httpMethod != HttpMethod.valueOf(request.method().name())) {
+        }
+        if (handler.httpMethod != HttpMethod.valueOf(request.method().name())) {
             response.modify(METHOD_NOT_ALLOWED, TEXT_PLAIN, toByteBuf("Http Method ${request.method()} is not supported"))
             return
         }
@@ -90,60 +88,47 @@ class HttpControllerHandler(
         response.modify(handler.status.value, handler.contentType, toByteBuf(responseBody))
     }
 
-    private fun writeResponse(ctx: ChannelHandlerContext, response: HttpResponse) {
-        val buf = response.content
-        val result = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, response.status, buf)
-
-        val channel = ctx.channel()
-        val attribute = AttributeKey.valueOf<Cookie>("session_id")
-
-        channel.attr(attribute).get()?.let {
-            result.headers().set(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.STRICT.encode(it))
+    private fun handleException(exception: Throwable, request: FullHttpRequest, response: HttpResponse) {
+        var responseBody = ""
+        val handler = pathHandlerProvider.getExceptionHandler(exception::class)
+        if (handler != null) {
+            val args = createHandlerArguments(handler, request, exception)
+            val result = handler.execute(*args)
+            if (result is String) {
+                responseBody = result
+            } else if (result != null) {
+                responseBody = jacksonObjectMapper.writeValueAsString(result)
+            }
+            response.modify(handler.status.value, handler.contentType, toByteBuf(responseBody))
+        } else {
+            response.modify(INTERNAL_SERVER_ERROR, TEXT_PLAIN, toByteBuf(exception.message ?: ""))
         }
-        result.headers().set(HttpHeaderNames.CONTENT_LENGTH, buf!!.readableBytes())
-        result.headers().set(HttpHeaderNames.CONTENT_TYPE, response.mimeType!!.value.toString() + "; charset=UTF-8")
-        HttpUtil.setKeepAlive(result, true)
-
-        ctx.writeAndFlush(result)
     }
 
-    private fun createHandlerArguments(handler: HttpHandlerMetaInfo, request: FullHttpRequest): Array<Any> {
-        val args = mutableListOf<Any>()
-        val pathVariables = pathMatcher.extractUriTemplateVariables(handler.path, request.uri())
-        handler.parameters.forEach {
-            val value = when (it.value.annotation) {
-                is RequestBody -> {
-                    jacksonObjectMapper.readValue(request.content().toString(charset), it.value.clazz)
-                }
-                is PathVariable -> {
-                    NumberUtils.parseNumber(pathVariables[it.key]!!, it.value.clazz)
-                }
-                else -> {
-                    when {
-                        it.value.clazz == FullHttpRequest::class.java -> request
-                        it.value.clazz == Session::class.java -> sessionHandler.findSession(request) ?:
-                            throw IllegalStateException("Session not found")
-                        else -> throw IllegalArgumentException("Unknown context parameter with type ${it.value.clazz}")
-                    }
-                }
-            }
-            args.add(value)
+    private fun createHandlerArguments(handler: HttpHandlerMetaInfo, request: FullHttpRequest, exception: Throwable? = null): Array<Any> {
+        val pathVariables = if (handler.path.isNotEmpty()) {
+            pathMatcher.extractUriTemplateVariables(handler.path, request.uri())
+        } else {
+            emptyMap()
         }
-        return args.toTypedArray()
+        return handler.parameters.map {
+            when (it.value.annotation) {
+                is RequestBody -> jacksonObjectMapper.readValue(request.content().toString(charset), it.value.clazz)
+                is PathVariable -> NumberUtils.parseNumber(pathVariables[it.key]!!, it.value.clazz)
+                else -> defineContextParameter(it.value.clazz, request, exception)
+            }
+        }.toTypedArray()
     }
 
-    fun createExceptionHandlerArguments(handler: HttpHandlerMetaInfo, request: FullHttpRequest, exception: Throwable): Array<Any> {
-        val args = mutableListOf<Any>()
-        handler.parameters.forEach {
-            val value = when {
-                Throwable::class.java.isAssignableFrom(it.value.clazz) -> exception
-                it.value.clazz == FullHttpRequest::class.java -> request
-                it.value.clazz == Session::class.java -> sessionHandler.findSession(request) ?: Session("id")
-                else -> throw IllegalArgumentException("Unknown context parameter with type ${it.value.clazz}")
-            }
-            args.add(value)
+    private fun defineContextParameter(parameterType: Class<*>, request: FullHttpRequest, exception: Throwable? = null): Any {
+        return when {
+            parameterType == FullHttpRequest::class.java -> request
+            Throwable::class.java.isAssignableFrom(parameterType) -> exception ?:
+                throw IllegalStateException("Unknown exception specified")
+            parameterType == Session::class.java -> sessionHandler.findSession(request) ?:
+                throw IllegalStateException("Session not found")
+            else -> throw IllegalArgumentException("Unknown context parameter with type $parameterType")
         }
-        return args.toTypedArray()
     }
 
     /**

@@ -14,7 +14,7 @@ import org.springframework.stereotype.Controller
 class UserController {
 
     @RequestMapping(value = "/{name}", method = HttpMethod.GET)
-    fun getCurrentUser(@PathVariable name: String, session: Session, request: FullHttpRequest): UserDto? {
+    fun getCurrentUser(@PathVariable name: String, request: FullHttpRequest): UserDto? {
         return UserDto(name, "Molchanov", "ruslanys@gmail.com")
     }
 
