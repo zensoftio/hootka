@@ -8,9 +8,8 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.http.*
 import io.netty.handler.codec.http.HttpResponseStatus.*
-import io.netty.handler.codec.http.cookie.Cookie
 import io.netty.handler.codec.http.cookie.ServerCookieEncoder
-import io.netty.util.AttributeKey
+import io.netty.util.AsciiString
 import io.zensoft.annotation.PathVariable
 import io.zensoft.annotation.RequestBody
 import io.zensoft.utils.NumberUtils
@@ -28,7 +27,7 @@ import java.nio.charset.Charset
 @Component
 class HttpControllerHandler(
     private val pathHandlerProvider: PathHandlerProvider,
-    private val sessionHandler: SessionHandler
+    private val sessionStorage: SessionStorage
 ) : SimpleChannelInboundHandler<FullHttpRequest>() {
 
     private val pathMatcher = AntPathMatcher()
@@ -47,18 +46,23 @@ class HttpControllerHandler(
             handleException(ex.targetException!!, request, response)
         }
 
-        writeResponse(ctx, response)
+        val session = sessionStorage.findSession(request)
+        if (session != null && session.isNew) {
+            val sessionCookie = sessionStorage.createSessionCookie(session)
+            response.headers.put(HttpHeaderNames.SET_COOKIE, AsciiString(ServerCookieEncoder.STRICT.encode(sessionCookie)))
+            session.isNew = false
+        }
+
+        writeResponse(ctx, request, response)
     }
 
-    private fun writeResponse(ctx: ChannelHandlerContext, response: HttpResponse) {
+    private fun writeResponse(ctx: ChannelHandlerContext, request: FullHttpRequest?, response: HttpResponse) {
         val buf = response.content
         val result = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, response.status, buf)
 
-        val channel = ctx.channel()
-        val attribute = AttributeKey.valueOf<Cookie>("session_id")
-        val createdSession = channel.attr(attribute).getAndSet(null)
-        createdSession?.let { result.headers().set(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.STRICT.encode(it)) }
-
+        for (header in response.headers) {
+            result.headers().set(header.key, header.value)
+        }
         result.headers().set(HttpHeaderNames.CONTENT_LENGTH, buf!!.readableBytes())
         result.headers().set(HttpHeaderNames.CONTENT_TYPE, response.mimeType!!.value.toString() + "; charset=UTF-8")
         HttpUtil.setKeepAlive(result, true)
@@ -70,7 +74,7 @@ class HttpControllerHandler(
         var responseBody = ""
         val handler = pathHandlerProvider.getMethodHandler(request)
         if (handler == null) {
-            response.modify(NOT_FOUND, TEXT_PLAIN, wrappedBuffer("Not found".toByteArray()))
+            response.modify(NOT_FOUND, TEXT_PLAIN, toByteBuf("Not found"))
             return
         }
         if (handler.httpMethod != HttpMethod.valueOf(request.method().name())) {
@@ -111,13 +115,14 @@ class HttpControllerHandler(
         } else {
             emptyMap()
         }
-        return handler.parameters.map {
+        val result = handler.parameters.map {
             when (it.value.annotation) {
                 is RequestBody -> jacksonObjectMapper.readValue(request.content().toString(charset), it.value.clazz)
                 is PathVariable -> NumberUtils.parseNumber(pathVariables[it.key]!!, it.value.clazz)
                 else -> defineContextParameter(it.value.clazz, request, exception)
             }
-        }.toTypedArray()
+        }
+        return result.toTypedArray()
     }
 
     private fun defineContextParameter(parameterType: Class<*>, request: FullHttpRequest, exception: Throwable? = null): Any {
@@ -125,7 +130,7 @@ class HttpControllerHandler(
             parameterType == FullHttpRequest::class.java -> request
             Throwable::class.java.isAssignableFrom(parameterType) -> exception ?:
                 throw IllegalStateException("Unknown exception specified")
-            parameterType == Session::class.java -> sessionHandler.findSession(request) ?:
+            parameterType == Session::class.java -> sessionStorage.findSession(request) ?:
                 throw IllegalStateException("Session not found")
             else -> throw IllegalArgumentException("Unknown context parameter with type $parameterType")
         }
@@ -138,7 +143,7 @@ class HttpControllerHandler(
     @Suppress("OverridingDeprecatedMember")
     override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
         log.error("Something went wrong", cause)
-        writeResponse(ctx, HttpResponse(TEXT_PLAIN, INTERNAL_SERVER_ERROR, null, toByteBuf(cause.message ?: "")))
+        writeResponse(ctx, null, HttpResponse(TEXT_PLAIN, INTERNAL_SERVER_ERROR, toByteBuf(cause.message ?: "")))
     }
 
     private fun toByteBuf(message: String): ByteBuf = wrappedBuffer(message.toByteArray())

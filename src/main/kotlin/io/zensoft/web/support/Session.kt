@@ -2,6 +2,7 @@ package io.zensoft.web.support
 
 class Session(
     val id: String,
+    var isNew: Boolean = true,
     private val attributes: MutableMap<String, Any> = mutableMapOf()
 ) {
 
