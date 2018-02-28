@@ -27,7 +27,8 @@ import java.nio.charset.Charset
 @Component
 class HttpControllerHandler(
     private val pathHandlerProvider: PathHandlerProvider,
-    private val sessionStorage: SessionStorage
+    private val sessionStorage: SessionStorage,
+    private val sessionHandler: SessionHandler
 ) : SimpleChannelInboundHandler<FullHttpRequest>() {
 
     private val pathMatcher = AntPathMatcher()
@@ -80,6 +81,10 @@ class HttpControllerHandler(
         if (handler.httpMethod != HttpMethod.valueOf(request.method().name())) {
             response.modify(METHOD_NOT_ALLOWED, TEXT_PLAIN, toByteBuf("Http Method ${request.method()} is not supported"))
             return
+        }
+
+        if(!handler.stateless) {
+            sessionHandler.handleSession(request, response)
         }
 
         val args = createHandlerArguments(handler, request)

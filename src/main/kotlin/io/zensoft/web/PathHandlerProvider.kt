@@ -49,17 +49,19 @@ class PathHandlerProvider(
             val superPathAnnotation = bean::class.findAnnotation<RequestMapping>()
             val superPath = superPathAnnotation?.value ?: ""
             val functions = bean::class.declaredFunctions
-
+            val statelessBeanAnnotation = bean::class.findAnnotation<Stateless>()
             for (function in functions) {
                 val pathAnnotation = function.findAnnotation<RequestMapping>() ?: continue
                 val path = superPath + pathAnnotation.value
                 val parameterMapping = mapHandlerParameters(function)
                 val status = function.findAnnotation<ResponseStatus>()?.value ?: HttpStatus.OK
                 val type = pathAnnotation.produces
+                val stateless = statelessBeanAnnotation != null || function.findAnnotation<Stateless>() != null
                 if (storage.containsKey(pathAnnotation.value)) {
                     throw IllegalStateException("Mapping $path is already exists.")
                 } else {
-                    storage[path] = HttpHandlerMetaInfo(bean, function, parameterMapping, status, type, path, pathAnnotation.method)
+                    storage[path] = HttpHandlerMetaInfo(bean, function, parameterMapping,
+                        stateless, status, type, path, pathAnnotation.method)
                 }
             }
         }
