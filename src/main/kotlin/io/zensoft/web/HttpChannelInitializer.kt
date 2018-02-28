@@ -18,7 +18,7 @@ class HttpChannelInitializer(
         pipeline.addLast(HttpRequestDecoder())
         pipeline.addLast(HttpObjectAggregator(1048576))
         pipeline.addLast(HttpResponseEncoder())
-        pipeline.addLast(sessionHandler)
+        // pipeline.addLast(sessionHandler)
         pipeline.addLast(httpControllerHandler)
     }
 
