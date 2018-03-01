@@ -1,4 +1,4 @@
-package io.zensoft.web
+package io.zensoft.web.handler
 
 import io.netty.handler.codec.http.FullHttpRequest
 import io.netty.handler.codec.http.HttpHeaderNames

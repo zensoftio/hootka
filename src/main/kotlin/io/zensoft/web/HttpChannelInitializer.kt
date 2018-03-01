@@ -5,6 +5,7 @@ import io.netty.channel.socket.SocketChannel
 import io.netty.handler.codec.http.HttpObjectAggregator
 import io.netty.handler.codec.http.HttpRequestDecoder
 import io.netty.handler.codec.http.HttpResponseEncoder
+import io.zensoft.web.handler.HttpControllerHandler
 import org.springframework.stereotype.Component
 
 @Component

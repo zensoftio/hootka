@@ -1,4 +1,4 @@
-package io.zensoft.web
+package io.zensoft.web.handler
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.netty.buffer.ByteBuf
@@ -8,35 +8,30 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.http.*
 import io.netty.handler.codec.http.HttpResponseStatus.*
-import io.netty.handler.codec.http.cookie.ServerCookieEncoder
-import io.netty.util.AsciiString
-import io.zensoft.annotation.PathVariable
-import io.zensoft.annotation.RequestBody
-import io.zensoft.utils.NumberUtils
+import io.zensoft.web.provider.ExceptionHandlerProvider
+import io.zensoft.web.provider.HandlerParameterMapperProvider
+import io.zensoft.web.provider.PathHandlerProvider
 import io.zensoft.web.support.*
 import io.zensoft.web.support.HttpMethod
 import io.zensoft.web.support.HttpResponse
 import io.zensoft.web.support.MimeType.*
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import org.springframework.util.AntPathMatcher
 import java.lang.reflect.InvocationTargetException
-import java.nio.charset.Charset
 
 @ChannelHandler.Sharable
 @Component
 class HttpControllerHandler(
     private val pathHandlerProvider: PathHandlerProvider,
+    private val exceptionHandlerProvider: ExceptionHandlerProvider,
     private val sessionStorage: SessionStorage,
-    private val sessionHandler: SessionHandler
+    private val sessionHandler: SessionHandler,
+    private val handlerParameterProvider: HandlerParameterMapperProvider
 ) : SimpleChannelInboundHandler<FullHttpRequest>() {
-
-    private val pathMatcher = AntPathMatcher()
 
     companion object {
         private val log = LoggerFactory.getLogger(this::class.java)
         private val jacksonObjectMapper = jacksonObjectMapper()
-        private val charset = Charset.forName("UTF-8")
     }
 
     override fun channelRead0(ctx: ChannelHandlerContext, request: FullHttpRequest) {
@@ -45,13 +40,6 @@ class HttpControllerHandler(
             handleRequest(request, response)
         } catch (ex: InvocationTargetException) {
             handleException(ex.targetException!!, request, response)
-        }
-
-        val session = sessionStorage.findSession(request)
-        if (session != null && session.isNew) {
-            val sessionCookie = sessionStorage.createSessionCookie(session)
-            response.headers.put(HttpHeaderNames.SET_COOKIE, AsciiString(ServerCookieEncoder.STRICT.encode(sessionCookie)))
-            session.isNew = false
         }
 
         writeResponse(ctx, request, response)
@@ -73,7 +61,8 @@ class HttpControllerHandler(
 
     private fun handleRequest(request: FullHttpRequest, response: HttpResponse) {
         var responseBody = ""
-        val handler = pathHandlerProvider.getMethodHandler(request)
+        val queryString = QueryStringDecoder(request.uri())
+        val handler = pathHandlerProvider.getMethodHandler(queryString.path())
         if (handler == null) {
             response.modify(NOT_FOUND, TEXT_PLAIN, toByteBuf("Not found"))
             return
@@ -99,7 +88,7 @@ class HttpControllerHandler(
 
     private fun handleException(exception: Throwable, request: FullHttpRequest, response: HttpResponse) {
         var responseBody = ""
-        val handler = pathHandlerProvider.getExceptionHandler(exception::class)
+        val handler = exceptionHandlerProvider.getExceptionHandler(exception::class)
         if (handler != null) {
             val args = createHandlerArguments(handler, request, exception)
             val result = handler.execute(*args)
@@ -115,16 +104,10 @@ class HttpControllerHandler(
     }
 
     private fun createHandlerArguments(handler: HttpHandlerMetaInfo, request: FullHttpRequest, exception: Throwable? = null): Array<Any> {
-        val pathVariables = if (handler.path.isNotEmpty()) {
-            pathMatcher.extractUriTemplateVariables(handler.path, request.uri())
-        } else {
-            emptyMap()
-        }
         val result = handler.parameters.map {
-            when (it.value.annotation) {
-                is RequestBody -> jacksonObjectMapper.readValue(request.content().toString(charset), it.value.clazz)
-                is PathVariable -> NumberUtils.parseNumber(pathVariables[it.key]!!, it.value.clazz)
-                else -> defineContextParameter(it.value.clazz, request, exception)
+            when {
+                it.annotation != null -> handlerParameterProvider.createParameterValue(it, request, handler)
+                else -> defineContextParameter(it.clazz, request, exception)
             }
         }
         return result.toTypedArray()

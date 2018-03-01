@@ -5,7 +5,7 @@ import kotlin.reflect.KFunction
 class HttpHandlerMetaInfo(
     private val instance: Any,
     private val handlerMethod: KFunction<*>,
-    val parameters: Map<String, HandlerMethodParameter>,
+    val parameters: List<HandlerMethodParameter>,
     val stateless: Boolean = false,
     val status: HttpStatus = HttpStatus.OK,
     val contentType: MimeType = MimeType.APPLICATION_JSON,
