@@ -21,6 +21,8 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter')
     compile("io.netty:netty-all:${nettyVersion}")
 
+    compile("org.freemarker:freemarker:2.3.23")
+
     // Utilities
     compile('com.github.ben-manes.caffeine:caffeine:2.6.2')
 

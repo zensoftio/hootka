@@ -1,12 +1,14 @@
 package io.zensoft.web.provider
 
-import io.zensoft.annotation.*
+import io.zensoft.web.annotation.*
 import io.zensoft.web.support.HttpHandlerMetaInfo
+import io.zensoft.web.support.HttpMethod
 import io.zensoft.web.support.HttpStatus
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
 import org.springframework.stereotype.Controller
 import org.springframework.util.AntPathMatcher
+import org.springframework.util.MimeType
 import javax.annotation.PostConstruct
 import kotlin.collections.HashMap
 import kotlin.reflect.full.*
@@ -18,11 +20,11 @@ class PathHandlerProvider(
 ) {
 
     private val antPathMatcher = AntPathMatcher()
-    private val storage = HashMap<String, HttpHandlerMetaInfo>()
+    private val storage = HashMap<Pair<String, HttpMethod>, HttpHandlerMetaInfo>()
 
-    fun getMethodHandler(path: String) : HttpHandlerMetaInfo? {
+    fun getMethodHandler(path: String, httpMethod: HttpMethod) : HttpHandlerMetaInfo? {
         return storage.keys
-                .firstOrNull { antPathMatcher.match(it, path) }
+                .firstOrNull { antPathMatcher.match(it.first, path) && httpMethod == it.second }
                 ?.let { storage[it] }
     }
 
@@ -41,10 +43,11 @@ class PathHandlerProvider(
                 val status = function.findAnnotation<ResponseStatus>()?.value ?: HttpStatus.OK
                 val type = pathAnnotation.produces
                 val stateless = statelessBeanAnnotation != null || function.findAnnotation<Stateless>() != null
-                if (storage.containsKey(pathAnnotation.value)) {
+                val pair = Pair(path, pathAnnotation.method)
+                if (storage.containsKey(pair)) {
                     throw IllegalStateException("Mapping $path is already exists.")
                 } else {
-                    storage[path] = HttpHandlerMetaInfo(bean, function, parameterMapping,
+                    storage[pair] = HttpHandlerMetaInfo(bean, function, parameterMapping,
                         stateless, status, type, path, pathAnnotation.method)
                 }
             }

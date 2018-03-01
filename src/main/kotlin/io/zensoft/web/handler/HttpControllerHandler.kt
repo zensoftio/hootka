@@ -11,6 +11,7 @@ import io.netty.handler.codec.http.HttpResponseStatus.*
 import io.zensoft.web.provider.ExceptionHandlerProvider
 import io.zensoft.web.provider.HandlerParameterMapperProvider
 import io.zensoft.web.provider.PathHandlerProvider
+import io.zensoft.web.provider.ResponseResolverProvider
 import io.zensoft.web.support.*
 import io.zensoft.web.support.HttpMethod
 import io.zensoft.web.support.HttpResponse
@@ -26,7 +27,8 @@ class HttpControllerHandler(
     private val exceptionHandlerProvider: ExceptionHandlerProvider,
     private val sessionStorage: SessionStorage,
     private val sessionHandler: SessionHandler,
-    private val handlerParameterProvider: HandlerParameterMapperProvider
+    private val handlerParameterProvider: HandlerParameterMapperProvider,
+    private val responseResolverProvider: ResponseResolverProvider
 ) : SimpleChannelInboundHandler<FullHttpRequest>() {
 
     companion object {
@@ -62,7 +64,7 @@ class HttpControllerHandler(
     private fun handleRequest(request: FullHttpRequest, response: HttpResponse) {
         var responseBody = ""
         val queryString = QueryStringDecoder(request.uri())
-        val handler = pathHandlerProvider.getMethodHandler(queryString.path())
+        val handler = pathHandlerProvider.getMethodHandler(queryString.path(), HttpMethod.valueOf(request.method.name()))
         if (handler == null) {
             response.modify(NOT_FOUND, TEXT_PLAIN, toByteBuf("Not found"))
             return
@@ -78,11 +80,7 @@ class HttpControllerHandler(
 
         val args = createHandlerArguments(handler, request)
         val result = handler.execute(*args)
-        if (result is String) {
-            responseBody = result
-        } else if (result != null) {
-            responseBody = jacksonObjectMapper.writeValueAsString(result)
-        }
+        responseBody = responseResolverProvider.createResponseBody(result!!, args, handler.contentType)
         response.modify(handler.status.value, handler.contentType, toByteBuf(responseBody))
     }
 
@@ -116,6 +114,7 @@ class HttpControllerHandler(
     private fun defineContextParameter(parameterType: Class<*>, request: FullHttpRequest, exception: Throwable? = null): Any {
         return when {
             parameterType == FullHttpRequest::class.java -> request
+            parameterType == ViewModel::class.java -> ViewModel()
             Throwable::class.java.isAssignableFrom(parameterType) -> exception ?:
                 throw IllegalStateException("Unknown exception specified")
             parameterType == Session::class.java -> sessionStorage.findSession(request) ?:

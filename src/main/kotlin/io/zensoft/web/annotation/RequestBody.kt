@@ -1,4 +1,4 @@
-package io.zensoft.annotation
+package io.zensoft.web.annotation
 
 @Target(AnnotationTarget.VALUE_PARAMETER)
 @Retention(AnnotationRetention.RUNTIME)

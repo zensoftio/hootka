@@ -2,7 +2,7 @@ package io.zensoft.web.mapper
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.netty.handler.codec.http.FullHttpRequest
-import io.zensoft.annotation.RequestBody
+import io.zensoft.web.annotation.RequestBody
 import io.zensoft.web.support.HandlerMethodParameter
 import io.zensoft.web.support.HttpHandlerMetaInfo
 import org.springframework.stereotype.Component

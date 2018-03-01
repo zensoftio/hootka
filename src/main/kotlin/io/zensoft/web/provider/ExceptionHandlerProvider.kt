@@ -1,8 +1,8 @@
 package io.zensoft.web.provider
 
-import io.zensoft.annotation.ControllerAdvice
-import io.zensoft.annotation.ExceptionHandler
-import io.zensoft.annotation.ResponseStatus
+import io.zensoft.web.annotation.ControllerAdvice
+import io.zensoft.web.annotation.ExceptionHandler
+import io.zensoft.web.annotation.ResponseStatus
 import io.zensoft.web.support.HttpHandlerMetaInfo
 import io.zensoft.web.support.HttpStatus
 import org.springframework.context.ApplicationContext
