@@ -16,7 +16,7 @@ class HttpChannelInitializer(
     override fun initChannel(ch: SocketChannel) {
         val pipeline = ch.pipeline()
         pipeline.addLast(HttpRequestDecoder())
-        pipeline.addLast(HttpObjectAggregator(1048576))
+        pipeline.addLast(HttpObjectAggregator(20971520)) //1048576
         pipeline.addLast(HttpResponseEncoder())
         pipeline.addLast(httpControllerHandler)
     }

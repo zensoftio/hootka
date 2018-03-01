@@ -1,6 +1,6 @@
 package io.zensoft.web.provider
 
-import io.zensoft.annotation.*
+import io.zensoft.web.annotation.*
 import io.zensoft.web.support.HttpHandlerMetaInfo
 import io.zensoft.web.support.HttpStatus
 import org.springframework.context.ApplicationContext

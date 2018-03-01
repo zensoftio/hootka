@@ -1,7 +1,7 @@
 package io.zensoft.web.mapper
 
 import io.netty.handler.codec.http.FullHttpRequest
-import io.zensoft.annotation.PathVariable
+import io.zensoft.web.annotation.PathVariable
 import io.zensoft.utils.NumberUtils
 import io.zensoft.web.support.HandlerMethodParameter
 import io.zensoft.web.support.HttpHandlerMetaInfo

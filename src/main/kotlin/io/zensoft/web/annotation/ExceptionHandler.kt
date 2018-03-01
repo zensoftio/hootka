@@ -1,4 +1,4 @@
-package io.zensoft.annotation
+package io.zensoft.web.annotation
 
 import kotlin.reflect.KClass
 
