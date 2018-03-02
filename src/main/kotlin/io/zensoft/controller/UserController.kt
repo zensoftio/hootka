@@ -16,7 +16,7 @@ class UserController {
 
     @Stateless
     @RequestMapping(value = "/current", method = HttpMethod.GET)
-    fun getCurrentUser(request: FullHttpRequest): UserDto? {
+    fun getCurrentUser(request: FullHttpRequest): UserDto {
         return UserDto("Ruslan", "Molchanov", "ruslanys@gmail.com")
     }
 

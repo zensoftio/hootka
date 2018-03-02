@@ -1,9 +1,10 @@
 package io.zensoft.web.validation
 
+import org.springframework.stereotype.Component
 import javax.validation.ConstraintViolationException
 import javax.validation.Validation
 
-
+@Component
 class ValidationService {
 
     private val validatorFactory = Validation.buildDefaultValidatorFactory()

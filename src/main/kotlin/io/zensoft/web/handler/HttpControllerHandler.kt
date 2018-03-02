@@ -33,7 +33,6 @@ class HttpControllerHandler(
 
     companion object {
         private val log = LoggerFactory.getLogger(this::class.java)
-        private val jacksonObjectMapper = jacksonObjectMapper()
     }
 
     override fun channelRead0(ctx: ChannelHandlerContext, request: FullHttpRequest) {
@@ -75,9 +74,7 @@ class HttpControllerHandler(
             return
         }
 
-        if(!handler.stateless) {
-            sessionHandler.handleSession(request, response)
-        }
+        if(!handler.stateless) sessionHandler.handleSession(request, response)
 
         val args = createHandlerArguments(handler, request)
         val result = handler.execute(*args)
@@ -86,16 +83,11 @@ class HttpControllerHandler(
     }
 
     private fun handleException(exception: Throwable, request: FullHttpRequest, response: HttpResponse) {
-        var responseBody = ""
         val handler = exceptionHandlerProvider.getExceptionHandler(exception::class)
         if (handler != null) {
             val args = createHandlerArguments(handler, request, exception)
             val result = handler.execute(*args)
-            if (result is String) {
-                responseBody = result
-            } else if (result != null) {
-                responseBody = jacksonObjectMapper.writeValueAsString(result)
-            }
+            val responseBody = responseResolverProvider.createResponseBody(result!!, args, handler.contentType)
             response.modify(handler.status.value, handler.contentType, toByteBuf(responseBody))
         } else {
             response.modify(INTERNAL_SERVER_ERROR, TEXT_PLAIN, toByteBuf(exception.message ?: ""))
@@ -114,12 +106,10 @@ class HttpControllerHandler(
 
     private fun defineContextParameter(parameterType: Class<*>, request: FullHttpRequest, exception: Throwable? = null): Any {
         return when {
-            parameterType == FullHttpRequest::class.java -> request
-            parameterType == ViewModel::class.java -> ViewModel()
-            Throwable::class.java.isAssignableFrom(parameterType) -> exception ?:
-                throw IllegalStateException("Unknown exception specified")
-            parameterType == Session::class.java -> sessionStorage.findSession(request) ?:
-                throw IllegalStateException("Session not found")
+            FullHttpRequest::class.java == parameterType -> request
+            ViewModel::class.java == parameterType -> ViewModel()
+            Session::class.java == parameterType -> sessionStorage.findSession(request) ?: throw IllegalStateException("Session not found")
+            Throwable::class.java.isAssignableFrom(parameterType) -> exception ?: throw IllegalStateException("Unknown exception specified")
             else -> throw IllegalArgumentException("Unknown context parameter with type $parameterType")
         }
     }
