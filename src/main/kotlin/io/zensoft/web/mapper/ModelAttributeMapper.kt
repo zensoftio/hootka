@@ -24,8 +24,8 @@ class ModelAttributeMapper: HttpRequestMapper {
         return mapper.convertValue(params, parameter.clazz)
     }
 
-    override fun mapParameter(parameter: KParameter, annotation: Annotation): HandlerMethodParameter {
-        annotation as ModelAttribute
+    override fun mapParameter(parameter: KParameter, annotations: List<Annotation>): HandlerMethodParameter {
+        val annotation = annotations.find { it is ModelAttribute }
         return HandlerMethodParameter(parameter.name!!, parameter.type.javaType as Class<*>, annotation)
     }
 

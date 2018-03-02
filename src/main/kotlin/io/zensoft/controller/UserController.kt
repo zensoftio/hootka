@@ -8,6 +8,7 @@ import io.zensoft.web.support.InMemoryFile
 import io.zensoft.web.support.MimeType
 import io.zensoft.web.support.ViewModel
 import org.springframework.stereotype.Controller
+import javax.validation.Valid
 
 @Controller
 @RequestMapping(value = "/api/user")
@@ -26,7 +27,7 @@ class UserController {
     }
 
     @RequestMapping(value = "/doReflect", method = HttpMethod.POST)
-    fun reflectUser(@RequestBody request: UserDto): Any? {
+    fun reflectUser(@Valid @RequestBody request: UserDto): Any? {
         return request
     }
 

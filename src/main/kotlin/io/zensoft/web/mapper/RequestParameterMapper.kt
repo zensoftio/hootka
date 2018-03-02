@@ -21,8 +21,8 @@ class RequestParameterMapper: HttpRequestMapper {
 
     override fun supportsAnnotation(annotation: Annotation): Boolean = annotation is RequestParam
 
-    override fun mapParameter(parameter: KParameter, annotation: Annotation): HandlerMethodParameter {
-        annotation as RequestParam
+    override fun mapParameter(parameter: KParameter, annotations: List<Annotation>): HandlerMethodParameter {
+        val annotation = annotations.find { it is RequestParam }
         return HandlerMethodParameter(parameter.name!!, parameter.type.javaType as Class<*>, annotation)
     }
 

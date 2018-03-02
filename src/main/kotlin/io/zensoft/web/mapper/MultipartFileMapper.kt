@@ -6,6 +6,7 @@ import io.netty.handler.codec.http.multipart.Attribute
 import io.netty.handler.codec.http.multipart.FileUpload
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder
 import io.netty.handler.codec.http.multipart.InterfaceHttpData
+import io.zensoft.web.annotation.ModelAttribute
 import io.zensoft.web.annotation.MultipartFile
 import io.zensoft.web.support.HandlerMethodParameter
 import io.zensoft.web.support.HttpHandlerMetaInfo
@@ -39,8 +40,8 @@ class MultipartFileMapper : HttpRequestMapper {
         return files.first()
     }
 
-    override fun mapParameter(parameter: KParameter, annotation: Annotation): HandlerMethodParameter {
-        annotation as MultipartFile
+    override fun mapParameter(parameter: KParameter, annotations: List<Annotation>): HandlerMethodParameter {
+        val annotation = annotations.find { it is MultipartFile }
         return HandlerMethodParameter(parameter.name!!, parameter.type.javaType as Class<*>, annotation)
     }
 

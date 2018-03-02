@@ -31,6 +31,12 @@ dependencies {
     compile("org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}")
     compile("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.4.1")
 
+    // Validation
+    compile("javax.validation:validation-api:2.0.0.Final")
+    compile("javax.el:javax.el-api:3.0.0")
+    compile("org.glassfish:javax.el:3.0.0")
+    compile("org.hibernate.validator:hibernate-validator:6.0.1.Final")
+
     // DevTools
     compileOnly('org.springframework.boot:spring-boot-configuration-processor')
 

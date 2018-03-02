@@ -11,6 +11,6 @@ interface HttpRequestMapper {
 
     fun mapValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any
 
-    fun mapParameter(parameter: KParameter, annotation: Annotation): HandlerMethodParameter
+    fun mapParameter(parameter: KParameter, annotations: List<Annotation>): HandlerMethodParameter
 
 }

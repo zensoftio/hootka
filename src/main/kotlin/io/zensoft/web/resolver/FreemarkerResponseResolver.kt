@@ -24,7 +24,7 @@ class FreemarkerResponseResolver(
     override fun resolveResponseBody(result: Any, handlerArgs: Array<Any>): String {
         if (result !is String) throw IllegalArgumentException("String return type should be for html view response methods")
         val viewModel = handlerArgs.find { it::class.java.isAssignableFrom(ViewModel::class.java) } as ViewModel
-        val template = freemarkerConfig.getTemplate("$pathPrefix${result as String}$pathSuffix")
+        val template = freemarkerConfig.getTemplate("$pathPrefix$result$pathSuffix")
         val out = StringWriter()
         val attributes = viewModel.getAttributes()
         template.process(attributes, out)

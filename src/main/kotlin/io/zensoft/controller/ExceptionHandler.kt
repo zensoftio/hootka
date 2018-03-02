@@ -4,6 +4,8 @@ import io.zensoft.web.annotation.ControllerAdvice
 import io.zensoft.web.annotation.ExceptionHandler
 import io.zensoft.web.annotation.ResponseStatus
 import io.zensoft.web.support.HttpStatus
+import io.zensoft.web.validation.ValidationError
+import javax.validation.ConstraintViolationException
 
 @ControllerAdvice
 class ExceptionHandler {
@@ -12,6 +14,12 @@ class ExceptionHandler {
     @ExceptionHandler([IllegalStateException::class, IllegalArgumentException::class])
     fun handleException(ex: Exception): String {
         return "Something went wrong ${ex.message}"
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler([ConstraintViolationException::class])
+    fun handleValidationException(ex: ConstraintViolationException): List<ValidationError> {
+        return ex.constraintViolations.map { ValidationError(it.propertyPath.toString(), it.message) }
     }
 
 }

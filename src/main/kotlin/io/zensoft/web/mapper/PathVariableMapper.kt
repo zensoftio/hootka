@@ -17,15 +17,15 @@ class PathVariableMapper: HttpRequestMapper {
 
     override fun supportsAnnotation(annotation: Annotation): Boolean = annotation is PathVariable
 
-    override fun mapParameter(parameter: KParameter, annotation: Annotation): HandlerMethodParameter {
-        annotation as PathVariable
-        val patternName = if (annotation.value.isEmpty()) parameter.name else annotation.value
-        return HandlerMethodParameter(patternName!!, parameter.type.javaType as Class<*>, annotation)
-    }
-
     override fun mapValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any {
         val pathVariables = pathMatcher.extractUriTemplateVariables(handlerMethod.path, request.uri())
         return NumberUtils.parseNumber(pathVariables[parameter.name]!!, parameter.clazz)
+    }
+
+    override fun mapParameter(parameter: KParameter, annotations: List<Annotation>): HandlerMethodParameter {
+        val annotation = annotations.find { it is PathVariable } as PathVariable
+        val patternName = if (annotation.value.isEmpty()) parameter.name else annotation.value
+        return HandlerMethodParameter(patternName!!, parameter.type.javaType as Class<*>, annotation)
     }
 
 }

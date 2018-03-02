@@ -42,6 +42,8 @@ class HttpControllerHandler(
             handleRequest(request, response)
         } catch (ex: InvocationTargetException) {
             handleException(ex.targetException!!, request, response)
+        } catch (ex: Exception) {
+            handleException(ex, request, response)
         }
 
         writeResponse(ctx, request, response)
@@ -62,9 +64,8 @@ class HttpControllerHandler(
     }
 
     private fun handleRequest(request: FullHttpRequest, response: HttpResponse) {
-        var responseBody = ""
         val queryString = QueryStringDecoder(request.uri())
-        val handler = pathHandlerProvider.getMethodHandler(queryString.path(), HttpMethod.valueOf(request.method.name()))
+        val handler = pathHandlerProvider.getMethodHandler(queryString.path(), HttpMethod.valueOf(request.method().name()))
         if (handler == null) {
             response.modify(NOT_FOUND, TEXT_PLAIN, toByteBuf("Not found"))
             return
@@ -80,7 +81,7 @@ class HttpControllerHandler(
 
         val args = createHandlerArguments(handler, request)
         val result = handler.execute(*args)
-        responseBody = responseResolverProvider.createResponseBody(result!!, args, handler.contentType)
+        val responseBody = responseResolverProvider.createResponseBody(result!!, args, handler.contentType)
         response.modify(handler.status.value, handler.contentType, toByteBuf(responseBody))
     }
 

@@ -4,9 +4,11 @@ import io.netty.handler.codec.http.FullHttpRequest
 import io.zensoft.web.mapper.HttpRequestMapper
 import io.zensoft.web.support.HandlerMethodParameter
 import io.zensoft.web.support.HttpHandlerMetaInfo
+import io.zensoft.web.validation.ValidationService
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
+import javax.validation.Valid
 import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
 import kotlin.reflect.full.valueParameters
@@ -14,7 +16,8 @@ import kotlin.reflect.jvm.javaType
 
 @Component
 class HandlerParameterMapperProvider(
-    private val context: ApplicationContext
+    private val context: ApplicationContext,
+    private val validationService: ValidationService
 ) {
 
     private lateinit var mappers: List<HttpRequestMapper>
@@ -22,7 +25,11 @@ class HandlerParameterMapperProvider(
     fun createParameterValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any {
         for (mapper in mappers) {
             if (mapper.supportsAnnotation(parameter.annotation!!)) {
-                return mapper.mapValue(parameter, request, handlerMethod)
+                val argument = mapper.mapValue(parameter, request, handlerMethod)
+                if (parameter.validationRequired) {
+                    validationService.validateBean(argument)
+                }
+                return argument
             }
         }
         throw IllegalArgumentException("Unknown annotation type to map handler parameter. Annotation: ${parameter.annotation}")
@@ -32,7 +39,7 @@ class HandlerParameterMapperProvider(
         for (annotation in parameter.annotations) {
             for (mapper in mappers) {
                 if (mapper.supportsAnnotation(annotation)) {
-                    return mapper.mapParameter(parameter, annotation)
+                    return mapper.mapParameter(parameter, parameter.annotations)
                 }
             }
         }
@@ -44,9 +51,9 @@ class HandlerParameterMapperProvider(
         for (parameter in function.valueParameters) {
             if (parameter.annotations.isEmpty()) {
                 parameters.add(HandlerMethodParameter(parameter.name!!, parameter.type.javaType as Class<*>))
-                continue
+            } else {
+                parameters.add(mapHandlerParameter(parameter))
             }
-            parameters.add(mapHandlerParameter(parameter))
         }
         return parameters
     }
