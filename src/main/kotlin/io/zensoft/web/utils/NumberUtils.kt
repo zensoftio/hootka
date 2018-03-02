@@ -1,4 +1,4 @@
-package io.zensoft.utils
+package io.zensoft.web.utils
 
 import java.math.BigDecimal
 

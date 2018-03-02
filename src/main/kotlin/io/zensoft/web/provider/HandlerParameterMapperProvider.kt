@@ -8,7 +8,6 @@ import io.zensoft.web.validation.ValidationService
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
-import javax.validation.Valid
 import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
 import kotlin.reflect.full.valueParameters
@@ -22,11 +21,11 @@ class HandlerParameterMapperProvider(
 
     private lateinit var mappers: List<HttpRequestMapper>
 
-    fun createParameterValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any {
+    fun createParameterValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any? {
         for (mapper in mappers) {
             if (mapper.supportsAnnotation(parameter.annotation!!)) {
                 val argument = mapper.mapValue(parameter, request, handlerMethod)
-                if (parameter.validationRequired) {
+                if (argument != null && parameter.validationRequired) {
                     validationService.validateBean(argument)
                 }
                 return argument
@@ -50,7 +49,8 @@ class HandlerParameterMapperProvider(
         val parameters = mutableListOf<HandlerMethodParameter>()
         for (parameter in function.valueParameters) {
             if (parameter.annotations.isEmpty()) {
-                parameters.add(HandlerMethodParameter(parameter.name!!, parameter.type.javaType as Class<*>))
+                parameters.add(HandlerMethodParameter(parameter.name!!, parameter.type.javaType as Class<*>,
+                    parameter.type.isMarkedNullable))
             } else {
                 parameters.add(mapHandlerParameter(parameter))
             }

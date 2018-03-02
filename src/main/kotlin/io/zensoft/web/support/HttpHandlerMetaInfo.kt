@@ -13,6 +13,6 @@ class HttpHandlerMetaInfo(
     val httpMethod: HttpMethod = HttpMethod.GET
 ) {
 
-    fun execute(vararg args: Any): Any? = handlerMethod.call(instance, *args)
+    fun execute(vararg args: Any?): Any? = handlerMethod.call(instance, *args)
 
 }

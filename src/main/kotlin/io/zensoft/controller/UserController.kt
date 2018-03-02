@@ -3,10 +3,7 @@ package io.zensoft.controller
 import io.netty.handler.codec.http.FullHttpRequest
 import io.zensoft.web.annotation.*
 import io.zensoft.domain.UserDto
-import io.zensoft.web.support.HttpMethod
-import io.zensoft.web.support.InMemoryFile
-import io.zensoft.web.support.MimeType
-import io.zensoft.web.support.ViewModel
+import io.zensoft.web.support.*
 import org.springframework.stereotype.Controller
 import javax.validation.Valid
 
@@ -16,7 +13,7 @@ class UserController {
 
     @Stateless
     @RequestMapping(value = "/current", method = HttpMethod.GET)
-    fun getCurrentUser(request: FullHttpRequest): UserDto {
+    fun getCurrentUser(): UserDto {
         return UserDto("Ruslan", "Molchanov", "ruslanys@gmail.com")
     }
 
@@ -32,8 +29,8 @@ class UserController {
     }
 
     @RequestMapping(value = "/doReflectForm", method = HttpMethod.POST)
-    fun reflectForm(@RequestParam firstName: String): Any? {
-        return firstName
+    fun reflectForm(@ModelAttribute user: UserDto): Any? {
+        return user
     }
 
     @RequestMapping(value = "/doAcceptFile", method = HttpMethod.POST)

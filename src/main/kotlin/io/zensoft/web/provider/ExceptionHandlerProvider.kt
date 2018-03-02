@@ -20,7 +20,6 @@ class ExceptionHandlerProvider(
 
     private val exceptionHandlers = HashMap<KClass<out Throwable>, HttpHandlerMetaInfo>()
 
-
     fun getExceptionHandler(exceptionType: KClass<out Throwable>): HttpHandlerMetaInfo? {
         return exceptionHandlers[exceptionType]
     }

@@ -25,9 +25,6 @@ class MultipartFileMapper : HttpRequestMapper {
         while (multipartContent.hasNext()) {
             val content = multipartContent.next()
             when(content.httpDataType) {
-                InterfaceHttpData.HttpDataType.Attribute -> {
-                    val attribute = content as Attribute
-                }
                 InterfaceHttpData.HttpDataType.FileUpload -> {
                     val fileUpload = content as FileUpload
                     files.add(InMemoryFile(fileUpload.filename, ByteBufInputStream(fileUpload.byteBuf)))
@@ -41,7 +38,8 @@ class MultipartFileMapper : HttpRequestMapper {
 
     override fun mapParameter(parameter: KParameter, annotations: List<Annotation>): HandlerMethodParameter {
         val annotation = annotations.find { it is MultipartFile }
-        return HandlerMethodParameter(parameter.name!!, parameter.type.javaType as Class<*>, annotation)
+        return HandlerMethodParameter(parameter.name!!, parameter.type.javaType as Class<*>,
+            parameter.type.isMarkedNullable, annotation)
     }
 
 

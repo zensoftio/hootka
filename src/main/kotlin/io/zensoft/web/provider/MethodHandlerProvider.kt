@@ -1,6 +1,7 @@
 package io.zensoft.web.provider
 
 import io.zensoft.web.annotation.*
+import io.zensoft.web.support.HandlerMethodKey
 import io.zensoft.web.support.HttpHandlerMetaInfo
 import io.zensoft.web.support.HttpMethod
 import io.zensoft.web.support.HttpStatus
@@ -14,17 +15,18 @@ import kotlin.collections.HashMap
 import kotlin.reflect.full.*
 
 @Component
-class PathHandlerProvider(
+class MethodHandlerProvider(
         private val context: ApplicationContext,
         private val handlerParameterMapperProvider: HandlerParameterMapperProvider
 ) {
 
     private val antPathMatcher = AntPathMatcher()
-    private val storage = HashMap<Pair<String, HttpMethod>, HttpHandlerMetaInfo>()
+    private val storage = HashMap<HandlerMethodKey, HttpHandlerMetaInfo>()
 
     fun getMethodHandler(path: String, httpMethod: HttpMethod) : HttpHandlerMetaInfo? {
+        val stringMethod = httpMethod.toString()
         return storage.keys
-                .firstOrNull { antPathMatcher.match(it.first, path) && httpMethod == it.second }
+                .firstOrNull { it.method == stringMethod && antPathMatcher.match(it.path, path) }
                 ?.let { storage[it] }
     }
 
@@ -32,10 +34,9 @@ class PathHandlerProvider(
     private fun init() {
         val beans = context.getBeansWithAnnotation(Controller::class.java).values
         for (bean in beans) {
-            val superPathAnnotation = bean::class.findAnnotation<RequestMapping>()
-            val superPath = superPathAnnotation?.value ?: ""
-            val functions = bean::class.declaredFunctions
+            val superPath = bean::class.findAnnotation<RequestMapping>()?.value ?: ""
             val statelessBeanAnnotation = bean::class.findAnnotation<Stateless>()
+            val functions = bean::class.declaredFunctions
             for (function in functions) {
                 val pathAnnotation = function.findAnnotation<RequestMapping>() ?: continue
                 val path = superPath + pathAnnotation.value
@@ -43,11 +44,11 @@ class PathHandlerProvider(
                 val status = function.findAnnotation<ResponseStatus>()?.value ?: HttpStatus.OK
                 val type = pathAnnotation.produces
                 val stateless = statelessBeanAnnotation != null || function.findAnnotation<Stateless>() != null
-                val pair = Pair(path, pathAnnotation.method)
-                if (storage.containsKey(pair)) {
+                val key = HandlerMethodKey(path, pathAnnotation.method.toString())
+                if (storage.containsKey(key)) {
                     throw IllegalStateException("Mapping $path is already exists.")
                 } else {
-                    storage[pair] = HttpHandlerMetaInfo(bean, function, parameterMapping,
+                    storage[key] = HttpHandlerMetaInfo(bean, function, parameterMapping,
                         stateless, status, type, path, pathAnnotation.method)
                 }
             }

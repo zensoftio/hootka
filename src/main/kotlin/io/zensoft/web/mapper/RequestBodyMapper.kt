@@ -22,7 +22,8 @@ class RequestBodyMapper: HttpRequestMapper {
     override fun mapParameter(parameter: KParameter, annotations: List<Annotation>): HandlerMethodParameter {
         val annotation = annotations.find { it is RequestBody }
         val validationRequired = annotations.find { it is Valid } != null
-        return HandlerMethodParameter(parameter.name!!, parameter.type.javaType as Class<*>, annotation, validationRequired)
+        return HandlerMethodParameter(parameter.name!!, parameter.type.javaType as Class<*>,
+            parameter.type.isMarkedNullable, annotation, validationRequired)
     }
 
     override fun mapValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any {

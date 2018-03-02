@@ -11,7 +11,7 @@ class JsonResponseResolver: ResponseResolver {
 
     override fun supportsContentType(contentType: MimeType): Boolean = MimeType.APPLICATION_JSON == contentType
 
-    override fun resolveResponseBody(result: Any, handlerArgs: Array<Any>): String {
+    override fun resolveResponseBody(result: Any, handlerArgs: Array<Any?>): String {
         return jsonMapper.writeValueAsString(result)
     }
 

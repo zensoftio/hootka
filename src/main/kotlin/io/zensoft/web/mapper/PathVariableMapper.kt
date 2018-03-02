@@ -2,7 +2,7 @@ package io.zensoft.web.mapper
 
 import io.netty.handler.codec.http.FullHttpRequest
 import io.zensoft.web.annotation.PathVariable
-import io.zensoft.utils.NumberUtils
+import io.zensoft.web.utils.NumberUtils
 import io.zensoft.web.support.HandlerMethodParameter
 import io.zensoft.web.support.HttpHandlerMetaInfo
 import org.springframework.stereotype.Component
@@ -25,7 +25,8 @@ class PathVariableMapper: HttpRequestMapper {
     override fun mapParameter(parameter: KParameter, annotations: List<Annotation>): HandlerMethodParameter {
         val annotation = annotations.find { it is PathVariable } as PathVariable
         val patternName = if (annotation.value.isEmpty()) parameter.name else annotation.value
-        return HandlerMethodParameter(patternName!!, parameter.type.javaType as Class<*>, annotation)
+        return HandlerMethodParameter(patternName!!, parameter.type.javaType as Class<*>,
+            parameter.type.isMarkedNullable, annotation)
     }
 
 }

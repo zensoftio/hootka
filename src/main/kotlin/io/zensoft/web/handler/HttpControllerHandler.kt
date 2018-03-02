@@ -1,6 +1,5 @@
 package io.zensoft.web.handler
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled.wrappedBuffer
 import io.netty.channel.ChannelHandler
@@ -10,12 +9,13 @@ import io.netty.handler.codec.http.*
 import io.netty.handler.codec.http.HttpResponseStatus.*
 import io.zensoft.web.provider.ExceptionHandlerProvider
 import io.zensoft.web.provider.HandlerParameterMapperProvider
-import io.zensoft.web.provider.PathHandlerProvider
+import io.zensoft.web.provider.MethodHandlerProvider
 import io.zensoft.web.provider.ResponseResolverProvider
 import io.zensoft.web.support.*
 import io.zensoft.web.support.HttpMethod
 import io.zensoft.web.support.HttpResponse
 import io.zensoft.web.support.MimeType.*
+import io.zensoft.web.utils.QueryStringUtils
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.lang.reflect.InvocationTargetException
@@ -23,7 +23,7 @@ import java.lang.reflect.InvocationTargetException
 @ChannelHandler.Sharable
 @Component
 class HttpControllerHandler(
-    private val pathHandlerProvider: PathHandlerProvider,
+    private val pathHandlerProvider: MethodHandlerProvider,
     private val exceptionHandlerProvider: ExceptionHandlerProvider,
     private val sessionStorage: SessionStorage,
     private val sessionHandler: SessionHandler,
@@ -94,7 +94,7 @@ class HttpControllerHandler(
         }
     }
 
-    private fun createHandlerArguments(handler: HttpHandlerMetaInfo, request: FullHttpRequest, exception: Throwable? = null): Array<Any> {
+    private fun createHandlerArguments(handler: HttpHandlerMetaInfo, request: FullHttpRequest, exception: Throwable? = null): Array<Any?> {
         val result = handler.parameters.map {
             when {
                 it.annotation != null -> handlerParameterProvider.createParameterValue(it, request, handler)
@@ -107,10 +107,12 @@ class HttpControllerHandler(
     private fun defineContextParameter(parameterType: Class<*>, request: FullHttpRequest, exception: Throwable? = null): Any {
         return when {
             FullHttpRequest::class.java == parameterType -> request
-            ViewModel::class.java == parameterType -> ViewModel()
             Session::class.java == parameterType -> sessionStorage.findSession(request) ?: throw IllegalStateException("Session not found")
             Throwable::class.java.isAssignableFrom(parameterType) -> exception ?: throw IllegalStateException("Unknown exception specified")
-            else -> throw IllegalArgumentException("Unknown context parameter with type $parameterType")
+            else -> {
+                val queryParams = QueryStringDecoder(request.uri()).parameters()
+                QueryStringUtils.createBeanFromQueryString(parameterType, queryParams)
+            }
         }
     }
 
