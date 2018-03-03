@@ -4,15 +4,19 @@ import io.zensoft.web.annotation.*
 import io.zensoft.domain.UserDto
 import io.zensoft.web.support.*
 import org.springframework.stereotype.Controller
-import javax.validation.Valid
 
 @Controller
 @RequestMapping(value = "/api/user")
 class UserController {
 
-    @Stateless
-    @RequestMapping(value = "/current", method = HttpMethod.GET)
+    @RequestMapping(value = "/statefull", method = HttpMethod.GET)
     fun getCurrentUser(): UserDto {
+        return UserDto("Ruslan", "Molchanov", "ruslanys@gmail.com")
+    }
+
+    @Stateless
+    @RequestMapping(value = "/stateless", method = HttpMethod.GET)
+    fun getCurrentUserStateless(): UserDto {
         return UserDto("Ruslan", "Molchanov", "ruslanys@gmail.com")
     }
 
@@ -24,7 +28,7 @@ class UserController {
 
     @Stateless
     @RequestMapping(value = "/doReflect", method = HttpMethod.POST)
-    fun reflectUser(@Valid request: UserDto): Any? {
+    fun reflectUser(@RequestBody request: UserDto): Any? {
         return request
     }
 

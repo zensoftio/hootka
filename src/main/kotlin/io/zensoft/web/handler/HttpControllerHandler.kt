@@ -64,9 +64,7 @@ class HttpControllerHandler(
 
     private fun handleRequest(request: FullHttpRequest, response: HttpResponse) {
         val handler = pathHandlerProvider.getMethodHandler(request.uri(), HttpMethod.valueOf(request.method().name()))
-
         if(!handler.stateless) sessionHandler.handleSession(request, response)
-
         val args = createHandlerArguments(handler, request)
         val result = handler.execute(*args)
         val responseBody = responseResolverProvider.createResponseBody(result!!, args, handler.contentType)
