@@ -16,10 +16,4 @@ class ExceptionHandler {
         return "Something went wrong ${ex.message}"
     }
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler([ConstraintViolationException::class])
-    fun handleValidationException(ex: ConstraintViolationException): List<ValidationError> {
-        return ex.constraintViolations.map { ValidationError(it.propertyPath.toString(), it.message) }
-    }
-
 }

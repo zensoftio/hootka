@@ -19,7 +19,7 @@ class PathVariableMapper: HttpRequestMapper {
         return annotations.find { it is PathVariable } != null
     }
 
-    override fun mapValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any {
+    override fun createValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any {
         val pathVariables = pathMatcher.extractUriTemplateVariables(handlerMethod.path, request.uri())
         return NumberUtils.parseNumber(pathVariables[parameter.name]!!, parameter.clazz)
     }

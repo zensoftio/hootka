@@ -9,7 +9,7 @@ interface HttpRequestMapper {
 
     fun supportsAnnotation(annotations: List<Annotation>): Boolean
 
-    fun mapValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any?
+    fun createValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any?
 
     fun mapParameter(parameter: KParameter, annotations: List<Annotation>): HandlerMethodParameter
 

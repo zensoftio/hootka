@@ -8,7 +8,6 @@ import io.zensoft.web.validation.ValidationService
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
-import javax.validation.Valid
 import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
 import kotlin.reflect.full.valueParameters
@@ -25,7 +24,7 @@ class HandlerParameterMapperProvider(
     fun createParameterValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any? {
         for (mapper in mappers) {
             if (mapper.supportsAnnotation(listOf(parameter.annotation!!))) {
-                val argument = mapper.mapValue(parameter, request, handlerMethod)
+                val argument = mapper.createValue(parameter, request, handlerMethod)
                 if (argument != null && parameter.validationRequired) {
                     validationService.validateBean(argument)
                 }

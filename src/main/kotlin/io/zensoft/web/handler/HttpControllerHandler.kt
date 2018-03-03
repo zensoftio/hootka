@@ -63,16 +63,7 @@ class HttpControllerHandler(
     }
 
     private fun handleRequest(request: FullHttpRequest, response: HttpResponse) {
-        val queryString = QueryStringDecoder(request.uri())
-        val handler = pathHandlerProvider.getMethodHandler(queryString.path(), HttpMethod.valueOf(request.method().name()))
-        if (handler == null) {
-            response.modify(NOT_FOUND, TEXT_PLAIN, toByteBuf("Not found"))
-            return
-        }
-        if (handler.httpMethod != HttpMethod.valueOf(request.method().name())) {
-            response.modify(METHOD_NOT_ALLOWED, TEXT_PLAIN, toByteBuf("Http Method ${request.method()} is not supported"))
-            return
-        }
+        val handler = pathHandlerProvider.getMethodHandler(request.uri(), HttpMethod.valueOf(request.method().name()))
 
         if(!handler.stateless) sessionHandler.handleSession(request, response)
 

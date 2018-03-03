@@ -1,6 +1,8 @@
 package io.zensoft.web.provider
 
+import io.netty.handler.codec.http.QueryStringDecoder
 import io.zensoft.web.annotation.*
+import io.zensoft.web.exception.HandlerMethodNotFoundException
 import io.zensoft.web.support.HandlerMethodKey
 import io.zensoft.web.support.HttpHandlerMetaInfo
 import io.zensoft.web.support.HttpMethod
@@ -22,11 +24,12 @@ class MethodHandlerProvider(
     private val antPathMatcher = AntPathMatcher()
     private val storage = HashMap<HandlerMethodKey, HttpHandlerMetaInfo>()
 
-    fun getMethodHandler(path: String, httpMethod: HttpMethod) : HttpHandlerMetaInfo? {
+    fun getMethodHandler(uri: String, httpMethod: HttpMethod) : HttpHandlerMetaInfo {
+        val path = QueryStringDecoder(uri).path()
         val stringMethod = httpMethod.toString()
-        return storage.keys
-                .firstOrNull { it.method == stringMethod && antPathMatcher.match(it.path, path) }
-                ?.let { storage[it] }
+        return storage.entries
+                .firstOrNull { it.key.method == stringMethod && antPathMatcher.match(it.key.path, path) }?.value
+                ?: throw HandlerMethodNotFoundException()
     }
 
     @PostConstruct

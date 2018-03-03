@@ -21,7 +21,7 @@ class MultipartFileMapper : HttpRequestMapper {
         return annotations.find { it is MultipartFile } != null
     }
 
-    override fun mapValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any {
+    override fun createValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any {
         val multipartContent = HttpPostRequestDecoder(request)
         val files = mutableListOf<InMemoryFile>()
         while (multipartContent.hasNext()) {

@@ -2,20 +2,18 @@ package io.zensoft.web.resolver
 
 import freemarker.template.Configuration
 import freemarker.template.Version
+import io.zensoft.web.properties.FreemarkerPathProperties
 import io.zensoft.web.support.MimeType
 import io.zensoft.web.support.ViewModel
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.io.StringWriter
 import javax.annotation.PostConstruct
 
 @Component
 class FreemarkerResponseResolver(
-//    @Value("\${freemarker.path.prefix}") private val pathPrefix: String,
-//    @Value("\${freemarker.path.suffix}") private val pathSuffix: String
+    private val properties: FreemarkerPathProperties
 ): ResponseResolver {
-
-    private val pathPrefix: String = "templates/"
-    private val pathSuffix: String = ".ftl"
 
     private lateinit var freemarkerConfig: Configuration
 
@@ -24,7 +22,7 @@ class FreemarkerResponseResolver(
     override fun resolveResponseBody(result: Any, handlerArgs: Array<Any?>): String {
         if (result !is String) throw IllegalArgumentException("String return type should be for html view response methods")
         val viewModel = handlerArgs.find { it != null && it::class.java.isAssignableFrom(ViewModel::class.java) } as ViewModel
-        val template = freemarkerConfig.getTemplate("$pathPrefix$result$pathSuffix")
+        val template = freemarkerConfig.getTemplate("${properties.prefix}$result${properties.suffix}")
         val out = StringWriter()
         val attributes = viewModel.getAttributes()
         template.process(attributes, out)

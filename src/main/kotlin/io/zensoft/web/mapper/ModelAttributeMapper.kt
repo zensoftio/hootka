@@ -20,7 +20,7 @@ class ModelAttributeMapper: HttpRequestMapper {
         return annotations.find { it is ModelAttribute } != null
     }
 
-    override fun mapValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any {
+    override fun createValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any {
         if (HttpMethod.valueOf(request.method().name()) == HttpMethod.POST) {
             val contentType = request.headers().get(HttpHeaderNames.CONTENT_TYPE)
             if(contentType == HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED.toString()) {

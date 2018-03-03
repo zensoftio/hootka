@@ -16,7 +16,7 @@ class ValidMapper: HttpRequestMapper {
         return annotations.size == 1 && annotations.find { it is Valid } != null
     }
 
-    override fun mapValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any? {
+    override fun createValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any? {
         return DeserializationUtils.createBeanFromQueryString(parameter.clazz, request)
     }
 

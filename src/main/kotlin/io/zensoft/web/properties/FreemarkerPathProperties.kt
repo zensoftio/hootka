@@ -4,7 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.stereotype.Component
 import org.springframework.validation.annotation.Validated
 
-@ConfigurationProperties(prefix = "freemarker.path", ignoreUnknownFields = false)
+@ConfigurationProperties("freemarker.path")
 @Validated
 @Component
 class FreemarkerPathProperties(

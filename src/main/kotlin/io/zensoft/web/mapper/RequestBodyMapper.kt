@@ -28,7 +28,7 @@ class RequestBodyMapper: HttpRequestMapper {
             parameter.type.isMarkedNullable, annotation, validationRequired)
     }
 
-    override fun mapValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any {
+    override fun createValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any {
         val iStream = ByteBufInputStream(request.content())
         return jsonMapper.readValue(iStream as InputStream, parameter.clazz)
     }

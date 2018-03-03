@@ -30,7 +30,7 @@ class RequestParameterMapper : HttpRequestMapper {
             parameter.type.isMarkedNullable, annotation)
     }
 
-    override fun mapValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any? {
+    override fun createValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any? {
         val queryParams = if (HttpMethod.POST == HttpMethod.valueOf(request.method().name())) {
             val contentType = request.headers().get(HttpHeaderNames.CONTENT_TYPE)
             if (contentType != HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED.toString()) {
