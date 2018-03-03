@@ -1,6 +1,5 @@
 package io.zensoft.controller
 
-import io.netty.handler.codec.http.FullHttpRequest
 import io.zensoft.web.annotation.*
 import io.zensoft.domain.UserDto
 import io.zensoft.web.support.*
@@ -23,8 +22,9 @@ class UserController {
         return "somepage"
     }
 
+    @Stateless
     @RequestMapping(value = "/doReflect", method = HttpMethod.POST)
-    fun reflectUser(@Valid @RequestBody request: UserDto): Any? {
+    fun reflectUser(@Valid request: UserDto): Any? {
         return request
     }
 

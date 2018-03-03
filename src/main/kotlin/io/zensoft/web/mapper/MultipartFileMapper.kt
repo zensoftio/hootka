@@ -17,7 +17,9 @@ import kotlin.reflect.jvm.javaType
 @Component
 class MultipartFileMapper : HttpRequestMapper {
 
-    override fun supportsAnnotation(annotation: Annotation): Boolean = annotation is MultipartFile
+    override fun supportsAnnotation(annotations: List<Annotation>): Boolean {
+        return annotations.find { it is MultipartFile } != null
+    }
 
     override fun mapValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any {
         val multipartContent = HttpPostRequestDecoder(request)

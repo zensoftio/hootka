@@ -1,12 +1,13 @@
 package io.zensoft.web.mapper
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import io.netty.buffer.ByteBufInputStream
 import io.netty.handler.codec.http.FullHttpRequest
 import io.zensoft.web.annotation.RequestBody
 import io.zensoft.web.support.HandlerMethodParameter
 import io.zensoft.web.support.HttpHandlerMetaInfo
 import org.springframework.stereotype.Component
-import java.nio.charset.Charset
+import java.io.InputStream
 import javax.validation.Valid
 import kotlin.reflect.KParameter
 import kotlin.reflect.jvm.javaType
@@ -15,9 +16,10 @@ import kotlin.reflect.jvm.javaType
 class RequestBodyMapper: HttpRequestMapper {
 
     private val jsonMapper = jacksonObjectMapper()
-    private val charset = Charset.forName("UTF-8")
 
-    override fun supportsAnnotation(annotation: Annotation): Boolean = annotation is RequestBody
+    override fun supportsAnnotation(annotations: List<Annotation>): Boolean {
+        return annotations.find { it is RequestBody } != null
+    }
 
     override fun mapParameter(parameter: KParameter, annotations: List<Annotation>): HandlerMethodParameter {
         val annotation = annotations.find { it is RequestBody }
@@ -27,7 +29,8 @@ class RequestBodyMapper: HttpRequestMapper {
     }
 
     override fun mapValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any {
-        return jsonMapper.readValue(request.content().toString(charset), parameter.clazz)
+        val iStream = ByteBufInputStream(request.content())
+        return jsonMapper.readValue(iStream as InputStream, parameter.clazz)
     }
 
 }

@@ -7,7 +7,7 @@ import kotlin.reflect.KParameter
 
 interface HttpRequestMapper {
 
-    fun supportsAnnotation(annotation: Annotation): Boolean
+    fun supportsAnnotation(annotations: List<Annotation>): Boolean
 
     fun mapValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any?
 

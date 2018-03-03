@@ -8,6 +8,7 @@ import io.zensoft.web.validation.ValidationService
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
+import javax.validation.Valid
 import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
 import kotlin.reflect.full.valueParameters
@@ -23,7 +24,7 @@ class HandlerParameterMapperProvider(
 
     fun createParameterValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any? {
         for (mapper in mappers) {
-            if (mapper.supportsAnnotation(parameter.annotation!!)) {
+            if (mapper.supportsAnnotation(listOf(parameter.annotation!!))) {
                 val argument = mapper.mapValue(parameter, request, handlerMethod)
                 if (argument != null && parameter.validationRequired) {
                     validationService.validateBean(argument)
@@ -35,17 +36,16 @@ class HandlerParameterMapperProvider(
     }
 
     private fun mapHandlerParameter(parameter: KParameter): HandlerMethodParameter {
-        for (annotation in parameter.annotations) {
-            for (mapper in mappers) {
-                if (mapper.supportsAnnotation(annotation)) {
-                    return mapper.mapParameter(parameter, parameter.annotations)
-                }
+        val annotations = parameter.annotations
+        for (mapper in mappers) {
+            if (mapper.supportsAnnotation(annotations)) {
+                return mapper.mapParameter(parameter, annotations)
             }
         }
         throw IllegalArgumentException("Unknown annotated parameter: ${parameter.name}")
     }
 
-    fun getHandlerParameters(function: KFunction<*>): List<HandlerMethodParameter> {
+    fun mapHandlerParameters(function: KFunction<*>): List<HandlerMethodParameter> {
         val parameters = mutableListOf<HandlerMethodParameter>()
         for (parameter in function.valueParameters) {
             if (parameter.annotations.isEmpty()) {

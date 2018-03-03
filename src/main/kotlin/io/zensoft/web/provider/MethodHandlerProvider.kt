@@ -9,7 +9,6 @@ import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
 import org.springframework.stereotype.Controller
 import org.springframework.util.AntPathMatcher
-import org.springframework.util.MimeType
 import javax.annotation.PostConstruct
 import kotlin.collections.HashMap
 import kotlin.reflect.full.*
@@ -40,7 +39,7 @@ class MethodHandlerProvider(
             for (function in functions) {
                 val pathAnnotation = function.findAnnotation<RequestMapping>() ?: continue
                 val path = superPath + pathAnnotation.value
-                val parameterMapping = handlerParameterMapperProvider.getHandlerParameters(function)
+                val parameterMapping = handlerParameterMapperProvider.mapHandlerParameters(function)
                 val status = function.findAnnotation<ResponseStatus>()?.value ?: HttpStatus.OK
                 val type = pathAnnotation.produces
                 val stateless = statelessBeanAnnotation != null || function.findAnnotation<Stateless>() != null

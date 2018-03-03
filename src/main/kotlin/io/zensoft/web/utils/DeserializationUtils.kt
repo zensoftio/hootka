@@ -2,17 +2,20 @@ package io.zensoft.web.utils
 
 import com.fasterxml.jackson.module.kotlin.isKotlinClass
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import io.netty.handler.codec.http.FullHttpRequest
+import io.netty.handler.codec.http.QueryStringDecoder
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl
 import java.lang.reflect.Field
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.javaType
 
-object QueryStringUtils {
+object DeserializationUtils {
 
     private val mapper = jacksonObjectMapper()
 
-    fun createBeanFromQueryString(beanClass: Class<*>, queryParams: Map<String, List<String>>): Any {
+    fun createBeanFromQueryString(beanClass: Class<*>, request: FullHttpRequest): Any {
+        val queryParams = QueryStringDecoder(request.uri()).parameters()
         val args = mutableMapOf<String, Any>()
 
         if(beanClass.isKotlinClass()) {
@@ -28,7 +31,8 @@ object QueryStringUtils {
                 args.put(field.name!!, value)
             }
         } else {
-            for (field in getFields(beanClass)) {
+            val fields = getFields(beanClass)
+            for (field in fields) {
                 val value = getFieldValue(field.name, field.type, queryParams) ?: continue
                 args.put(field.name, value)
             }

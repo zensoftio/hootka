@@ -30,7 +30,7 @@ class ExceptionHandlerProvider(
         for (advice in advices) {
             for (function in advice::class.declaredFunctions) {
                 val annotation = function.findAnnotation<ExceptionHandler>() ?: continue
-                val parameterMapping = handlerParameterMapperProvider.getHandlerParameters(function)
+                val parameterMapping = handlerParameterMapperProvider.mapHandlerParameters(function)
                 val status = function.findAnnotation<ResponseStatus>()?.value ?: HttpStatus.OK
                 val handlerMetaInfo = HttpHandlerMetaInfo(advice, function, parameterMapping, false, status)
                 for (exceptionType in annotation.values) {

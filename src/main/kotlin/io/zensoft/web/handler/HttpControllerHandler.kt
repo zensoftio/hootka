@@ -15,7 +15,7 @@ import io.zensoft.web.support.*
 import io.zensoft.web.support.HttpMethod
 import io.zensoft.web.support.HttpResponse
 import io.zensoft.web.support.MimeType.*
-import io.zensoft.web.utils.QueryStringUtils
+import io.zensoft.web.utils.DeserializationUtils
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.lang.reflect.InvocationTargetException
@@ -109,10 +109,7 @@ class HttpControllerHandler(
             FullHttpRequest::class.java == parameterType -> request
             Session::class.java == parameterType -> sessionStorage.findSession(request) ?: throw IllegalStateException("Session not found")
             Throwable::class.java.isAssignableFrom(parameterType) -> exception ?: throw IllegalStateException("Unknown exception specified")
-            else -> {
-                val queryParams = QueryStringDecoder(request.uri()).parameters()
-                QueryStringUtils.createBeanFromQueryString(parameterType, queryParams)
-            }
+            else -> DeserializationUtils.createBeanFromQueryString(parameterType, request)
         }
     }
 

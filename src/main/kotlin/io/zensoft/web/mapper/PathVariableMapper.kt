@@ -15,7 +15,9 @@ class PathVariableMapper: HttpRequestMapper {
 
     private val pathMatcher = AntPathMatcher()
 
-    override fun supportsAnnotation(annotation: Annotation): Boolean = annotation is PathVariable
+    override fun supportsAnnotation(annotations: List<Annotation>): Boolean {
+        return annotations.find { it is PathVariable } != null
+    }
 
     override fun mapValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any {
         val pathVariables = pathMatcher.extractUriTemplateVariables(handlerMethod.path, request.uri())

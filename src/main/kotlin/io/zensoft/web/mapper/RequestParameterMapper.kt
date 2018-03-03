@@ -19,7 +19,9 @@ class RequestParameterMapper : HttpRequestMapper {
 
     private val charset = Charset.forName("UTF-8")
 
-    override fun supportsAnnotation(annotation: Annotation): Boolean = annotation is RequestParam
+    override fun supportsAnnotation(annotations: List<Annotation>): Boolean {
+        return annotations.find { it is RequestParam } != null
+    }
 
     override fun mapParameter(parameter: KParameter, annotations: List<Annotation>): HandlerMethodParameter {
         val annotation = annotations.find { it is RequestParam } as RequestParam
