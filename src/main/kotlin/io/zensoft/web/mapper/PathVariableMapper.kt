@@ -1,6 +1,7 @@
 package io.zensoft.web.mapper
 
 import io.netty.handler.codec.http.FullHttpRequest
+import io.netty.handler.codec.http.QueryStringDecoder
 import io.zensoft.web.annotation.PathVariable
 import io.zensoft.web.utils.NumberUtils
 import io.zensoft.web.support.HandlerMethodParameter
@@ -20,7 +21,8 @@ class PathVariableMapper: HttpRequestMapper {
     }
 
     override fun createValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any {
-        val pathVariables = pathMatcher.extractUriTemplateVariables(handlerMethod.path, request.uri())
+        val path = QueryStringDecoder(request.uri()).path()
+        val pathVariables = pathMatcher.extractUriTemplateVariables(handlerMethod.path, path)
         return NumberUtils.parseNumber(pathVariables[parameter.name]!!, parameter.clazz)
     }
 
