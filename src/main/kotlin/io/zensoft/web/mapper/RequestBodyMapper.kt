@@ -2,10 +2,10 @@ package io.zensoft.web.mapper
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.netty.buffer.ByteBufInputStream
-import io.netty.handler.codec.http.FullHttpRequest
 import io.zensoft.web.annotation.RequestBody
 import io.zensoft.web.support.HandlerMethodParameter
 import io.zensoft.web.support.HttpHandlerMetaInfo
+import io.zensoft.web.support.WrappedHttpRequest
 import org.springframework.stereotype.Component
 import java.io.InputStream
 import javax.validation.Valid
@@ -28,8 +28,8 @@ class RequestBodyMapper: HttpRequestMapper {
             parameter.type.isMarkedNullable, annotation, validationRequired)
     }
 
-    override fun createValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any {
-        val iStream = ByteBufInputStream(request.content())
+    override fun createValue(parameter: HandlerMethodParameter, request: WrappedHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any {
+        val iStream = ByteBufInputStream(request.originalRequest.content())
         return jsonMapper.readValue(iStream as InputStream, parameter.clazz)
     }
 

@@ -12,7 +12,7 @@ import io.zensoft.web.provider.HandlerParameterMapperProvider
 import io.zensoft.web.provider.MethodHandlerProvider
 import io.zensoft.web.provider.ResponseResolverProvider
 import io.zensoft.web.support.*
-import io.zensoft.web.support.HttpMethod
+import io.zensoft.web.support.WrappedHttpRequest
 import io.zensoft.web.support.HttpResponse
 import io.zensoft.web.support.MimeType.*
 import io.zensoft.web.utils.DeserializationUtils
@@ -37,12 +37,13 @@ class HttpControllerHandler(
 
     override fun channelRead0(ctx: ChannelHandlerContext, request: FullHttpRequest) {
         val response = HttpResponse()
+        val wrappedRequest = WrappedHttpRequest.wrapRequest(request)
         try {
-            handleRequest(request, response)
+            handleRequest(wrappedRequest, response)
         } catch (ex: InvocationTargetException) {
-            handleException(ex.targetException!!, request, response)
+            handleException(ex.targetException!!, wrappedRequest, response)
         } catch (ex: Exception) {
-            handleException(ex, request, response)
+            handleException(ex, wrappedRequest, response)
         }
 
         writeResponse(ctx, request, response)
@@ -62,16 +63,16 @@ class HttpControllerHandler(
         ctx.writeAndFlush(result)
     }
 
-    private fun handleRequest(request: FullHttpRequest, response: HttpResponse) {
-        val handler = pathHandlerProvider.getMethodHandler(request.uri(), HttpMethod.valueOf(request.method().name()))
-        if(!handler.stateless) sessionHandler.handleSession(request, response)
+    private fun handleRequest(request: WrappedHttpRequest, response: HttpResponse) {
+        val handler = pathHandlerProvider.getMethodHandler(request.path, request.method)
+        if (!handler.stateless) sessionHandler.handleSession(request.originalRequest, response)
         val args = createHandlerArguments(handler, request)
         val result = handler.execute(*args)
         val responseBody = responseResolverProvider.createResponseBody(result!!, args, handler.contentType)
         response.modify(handler.status.value, handler.contentType, toByteBuf(responseBody))
     }
 
-    private fun handleException(exception: Throwable, request: FullHttpRequest, response: HttpResponse) {
+    private fun handleException(exception: Throwable, request: WrappedHttpRequest, response: HttpResponse) {
         val handler = exceptionHandlerProvider.getExceptionHandler(exception::class)
         if (handler != null) {
             val args = createHandlerArguments(handler, request, exception)
@@ -83,7 +84,7 @@ class HttpControllerHandler(
         }
     }
 
-    private fun createHandlerArguments(handler: HttpHandlerMetaInfo, request: FullHttpRequest, exception: Throwable? = null): Array<Any?> {
+    private fun createHandlerArguments(handler: HttpHandlerMetaInfo, request: WrappedHttpRequest, exception: Throwable? = null): Array<Any?> {
         val result = handler.parameters.map {
             when {
                 it.annotation != null -> handlerParameterProvider.createParameterValue(it, request, handler)
@@ -93,12 +94,12 @@ class HttpControllerHandler(
         return result.toTypedArray()
     }
 
-    private fun defineContextParameter(parameterType: Class<*>, request: FullHttpRequest, exception: Throwable? = null): Any {
+    private fun defineContextParameter(parameterType: Class<*>, request: WrappedHttpRequest, exception: Throwable? = null): Any {
         return when {
             FullHttpRequest::class.java == parameterType -> request
-            Session::class.java == parameterType -> sessionStorage.findSession(request) ?: throw IllegalStateException("Session not found")
+            Session::class.java == parameterType -> sessionStorage.findSession(request.originalRequest) ?: throw IllegalStateException("Session not found")
             Throwable::class.java.isAssignableFrom(parameterType) -> exception ?: throw IllegalStateException("Unknown exception specified")
-            else -> DeserializationUtils.createBeanFromQueryString(parameterType, request)
+            else -> DeserializationUtils.createBeanFromQueryString(parameterType, request.queryParams)
         }
     }
 

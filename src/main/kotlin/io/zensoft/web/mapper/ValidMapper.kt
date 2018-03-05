@@ -1,8 +1,8 @@
 package io.zensoft.web.mapper
 
-import io.netty.handler.codec.http.FullHttpRequest
 import io.zensoft.web.support.HandlerMethodParameter
 import io.zensoft.web.support.HttpHandlerMetaInfo
+import io.zensoft.web.support.WrappedHttpRequest
 import io.zensoft.web.utils.DeserializationUtils
 import org.springframework.stereotype.Component
 import javax.validation.Valid
@@ -16,8 +16,8 @@ class ValidMapper: HttpRequestMapper {
         return annotations.size == 1 && annotations.find { it is Valid } != null
     }
 
-    override fun createValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any? {
-        return DeserializationUtils.createBeanFromQueryString(parameter.clazz, request)
+    override fun createValue(parameter: HandlerMethodParameter, request: WrappedHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any? {
+        return DeserializationUtils.createBeanFromQueryString(parameter.clazz, request.queryParams)
     }
 
     override fun mapParameter(parameter: KParameter, annotations: List<Annotation>): HandlerMethodParameter {

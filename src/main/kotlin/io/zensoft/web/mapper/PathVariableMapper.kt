@@ -1,11 +1,10 @@
 package io.zensoft.web.mapper
 
-import io.netty.handler.codec.http.FullHttpRequest
-import io.netty.handler.codec.http.QueryStringDecoder
 import io.zensoft.web.annotation.PathVariable
 import io.zensoft.web.utils.NumberUtils
 import io.zensoft.web.support.HandlerMethodParameter
 import io.zensoft.web.support.HttpHandlerMetaInfo
+import io.zensoft.web.support.WrappedHttpRequest
 import org.springframework.stereotype.Component
 import org.springframework.util.AntPathMatcher
 import kotlin.reflect.KParameter
@@ -20,9 +19,8 @@ class PathVariableMapper: HttpRequestMapper {
         return annotations.find { it is PathVariable } != null
     }
 
-    override fun createValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any {
-        val path = QueryStringDecoder(request.uri()).path()
-        val pathVariables = pathMatcher.extractUriTemplateVariables(handlerMethod.path, path)
+    override fun createValue(parameter: HandlerMethodParameter, request: WrappedHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any {
+        val pathVariables = pathMatcher.extractUriTemplateVariables(handlerMethod.path, request.path)
         return NumberUtils.parseNumber(pathVariables[parameter.name]!!, parameter.clazz)
     }
 

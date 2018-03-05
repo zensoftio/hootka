@@ -1,12 +1,12 @@
 package io.zensoft.web.mapper
 
-import io.netty.handler.codec.http.FullHttpRequest
 import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpHeaderValues
 import io.zensoft.web.annotation.ModelAttribute
 import io.zensoft.web.support.HandlerMethodParameter
 import io.zensoft.web.support.HttpHandlerMetaInfo
 import io.zensoft.web.support.HttpMethod
+import io.zensoft.web.support.WrappedHttpRequest
 import io.zensoft.web.utils.DeserializationUtils
 import org.springframework.stereotype.Component
 import javax.validation.Valid
@@ -20,11 +20,11 @@ class ModelAttributeMapper: HttpRequestMapper {
         return annotations.find { it is ModelAttribute } != null
     }
 
-    override fun createValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any {
-        if (HttpMethod.valueOf(request.method().name()) == HttpMethod.POST) {
-            val contentType = request.headers().get(HttpHeaderNames.CONTENT_TYPE)
+    override fun createValue(parameter: HandlerMethodParameter, request: WrappedHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any {
+        if (request.method == HttpMethod.POST) {
+            val contentType = request.originalRequest.headers().get(HttpHeaderNames.CONTENT_TYPE)
             if(contentType == HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED.toString()) {
-                return DeserializationUtils.createBeanFromQueryString(parameter.clazz, request)
+                return DeserializationUtils.createBeanFromQueryString(parameter.clazz, request.queryParams)
             }
         }
         throw IllegalArgumentException("Model attribute processes only with post request with form encoded parameters")

@@ -20,10 +20,10 @@ class UserController {
         return UserDto("Ruslan", "Molchanov", "ruslanys@gmail.com")
     }
 
-    @RequestMapping(value = "/current/view/{name}", method = HttpMethod.GET, produces = MimeType.TEXT_HTML)
-    fun viewUser(viewModel: ViewModel, @PathVariable name: String, @RequestParam lastName: String): String {
-        viewModel.setAttribute("user", UserDto("Ruslan", "Molchanov", "ruslanys@gmail.com"))
-        return "somepage"
+    @Stateless
+    @RequestMapping(value = "/current/view/{firstName}", method = HttpMethod.GET)
+    fun viewUser(@PathVariable firstName: String, @RequestParam name: String, @RequestParam lastName: String) {
+        // return UserDto("Ruslan", "Molchanov", "ruslanys@gmail.com"))
     }
 
     @Stateless

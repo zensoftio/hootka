@@ -1,6 +1,5 @@
 package io.zensoft.web.mapper
 
-import io.netty.handler.codec.http.FullHttpRequest
 import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpHeaderValues
 import io.netty.handler.codec.http.QueryStringDecoder
@@ -9,9 +8,11 @@ import io.zensoft.web.utils.NumberUtils
 import io.zensoft.web.support.HandlerMethodParameter
 import io.zensoft.web.support.HttpHandlerMetaInfo
 import io.zensoft.web.support.HttpMethod
+import io.zensoft.web.support.WrappedHttpRequest
 import org.springframework.stereotype.Component
 import java.nio.charset.Charset
 import kotlin.reflect.KParameter
+import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.jvm.javaType
 
 @Component
@@ -30,29 +31,27 @@ class RequestParameterMapper : HttpRequestMapper {
             parameter.type.isMarkedNullable, annotation)
     }
 
-    override fun createValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any? {
-        val queryParams = if (HttpMethod.POST == HttpMethod.valueOf(request.method().name())) {
-            val contentType = request.headers().get(HttpHeaderNames.CONTENT_TYPE)
+    override fun createValue(parameter: HandlerMethodParameter, request: WrappedHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any? {
+        val queryParams = if (HttpMethod.POST == request.method) {
+            val contentType = request.originalRequest.headers().get(HttpHeaderNames.CONTENT_TYPE)
             if (contentType != HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED.toString()) {
                 throw IllegalArgumentException("Cannot map request parameter. Mismatched content type for post request")
             }
-            QueryStringDecoder(request.content().toString(charset), false).parameters()
+            QueryStringDecoder(request.originalRequest.content().toString(charset), false).parameters()
         } else {
-            QueryStringDecoder(request.uri()).parameters()
+            request.queryParams
         }
         val queryValues = queryParams[parameter.name] ?: if (parameter.nullable) {
             return null
         } else {
             throw IllegalArgumentException("Missing required query argument named ${parameter.name}")
         }
-        if (Iterable::class.java.isAssignableFrom(parameter.clazz)) {
-            throw IllegalArgumentException("Only array could be passed as query argument")
-        }
-        if (queryValues.size > 1 && !parameter.clazz.isArray) {
-            throw IllegalArgumentException("Expected single argument, but got multiple one")
-        }
-        if (parameter.clazz.isArray) {
-            return queryValues.toTypedArray()
+        if (queryValues.size > 1) {
+            if(parameter.clazz.isArray) {
+                return queryValues.toTypedArray()
+            } else {
+                throw IllegalArgumentException("Expected single argument, but got multiple one")
+            }
         }
         return NumberUtils.parseNumber(queryValues.first(), parameter.clazz)
     }

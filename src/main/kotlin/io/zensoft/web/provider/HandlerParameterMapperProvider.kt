@@ -1,9 +1,9 @@
 package io.zensoft.web.provider
 
-import io.netty.handler.codec.http.FullHttpRequest
 import io.zensoft.web.mapper.HttpRequestMapper
 import io.zensoft.web.support.HandlerMethodParameter
 import io.zensoft.web.support.HttpHandlerMetaInfo
+import io.zensoft.web.support.WrappedHttpRequest
 import io.zensoft.web.validation.ValidationService
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
@@ -21,7 +21,7 @@ class HandlerParameterMapperProvider(
 
     private lateinit var mappers: List<HttpRequestMapper>
 
-    fun createParameterValue(parameter: HandlerMethodParameter, request: FullHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any? {
+    fun createParameterValue(parameter: HandlerMethodParameter, request: WrappedHttpRequest, handlerMethod: HttpHandlerMetaInfo): Any? {
         for (mapper in mappers) {
             if (mapper.supportsAnnotation(listOf(parameter.annotation!!))) {
                 val argument = mapper.createValue(parameter, request, handlerMethod)

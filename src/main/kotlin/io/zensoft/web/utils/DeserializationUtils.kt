@@ -14,8 +14,7 @@ object DeserializationUtils {
 
     private val mapper = jacksonObjectMapper()
 
-    fun createBeanFromQueryString(beanClass: Class<*>, request: FullHttpRequest): Any {
-        val queryParams = QueryStringDecoder(request.uri()).parameters()
+    fun createBeanFromQueryString(beanClass: Class<*>, queryParams: Map<String, List<String>>): Any {
         val args = mutableMapOf<String, Any>()
 
         if(beanClass.isKotlinClass()) {
