@@ -5,6 +5,8 @@ import io.zensoft.web.annotation.ExceptionHandler
 import io.zensoft.web.annotation.ResponseStatus
 import io.zensoft.web.exception.HandlerMethodNotFoundException
 import io.zensoft.web.support.HttpStatus
+import io.zensoft.web.support.MimeType
+import io.zensoft.web.support.ViewModel
 import io.zensoft.web.validation.ValidationError
 import javax.validation.ConstraintViolationException
 
@@ -18,8 +20,10 @@ class DefaultExceptionControllerAdvice {
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler([HandlerMethodNotFoundException::class])
-    fun handleMethodHandlerNotFoundException(ex: HandlerMethodNotFoundException) {}
+    @ExceptionHandler(values = [HandlerMethodNotFoundException::class], produces = MimeType.TEXT_HTML)
+    fun handleMethodHandlerNotFoundException(ex: HandlerMethodNotFoundException, viewModel: ViewModel): String {
+        return "handler_not_found"
+    }
 
 
 }

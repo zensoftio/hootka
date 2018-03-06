@@ -8,7 +8,6 @@ import io.zensoft.web.support.HttpMethod
 import io.zensoft.web.support.HttpStatus
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
-import org.springframework.stereotype.Controller
 import org.springframework.util.AntPathMatcher
 import javax.annotation.PostConstruct
 import kotlin.collections.HashMap

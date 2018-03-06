@@ -11,7 +11,7 @@ class WrappedHttpRequest(
 ) {
     companion object {
 
-        fun wrapRequest(request: FullHttpRequest): WrappedHttpRequest {
+        fun wrap(request: FullHttpRequest): WrappedHttpRequest {
             val decoder = QueryStringDecoder(request.uri())
             val method = HttpMethod.valueOf(request.method().name())
             return WrappedHttpRequest(decoder.path(), method, decoder.parameters(), request)

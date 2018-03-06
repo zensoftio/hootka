@@ -1,12 +1,15 @@
 package io.zensoft.web.handler
 
 import io.netty.buffer.ByteBuf
+import io.netty.buffer.Unpooled.EMPTY_BUFFER
 import io.netty.buffer.Unpooled.wrappedBuffer
 import io.netty.channel.ChannelHandler
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.http.*
 import io.netty.handler.codec.http.HttpResponseStatus.*
+import io.netty.util.AsciiString
+import io.zensoft.web.exception.HandlerMethodNotFoundException
 import io.zensoft.web.provider.ExceptionHandlerProvider
 import io.zensoft.web.provider.HandlerParameterMapperProvider
 import io.zensoft.web.provider.MethodHandlerProvider
@@ -32,18 +35,24 @@ class HttpControllerHandler(
 ) : SimpleChannelInboundHandler<FullHttpRequest>() {
 
     companion object {
+        private const val REDIRECT_PREFIX = "redirect:"
+
         private val log = LoggerFactory.getLogger(this::class.java)
     }
 
     override fun channelRead0(ctx: ChannelHandlerContext, request: FullHttpRequest) {
         val response = HttpResponse()
-        val wrappedRequest = WrappedHttpRequest.wrapRequest(request)
+        val wrappedRequest = WrappedHttpRequest.wrap(request)
+        var handler: HttpHandlerMetaInfo? = null
         try {
-            handleRequest(wrappedRequest, response)
+            handler = pathHandlerProvider.getMethodHandler(wrappedRequest.path, wrappedRequest.method)
+            handleRequest(handler, wrappedRequest, response)
         } catch (ex: InvocationTargetException) {
-            handleException(ex.targetException!!, wrappedRequest, response)
+            handleException(handler!!.contentType, ex.targetException!!, wrappedRequest, response)
+        } catch (ex: HandlerMethodNotFoundException) {
+            handleException(TEXT_HTML, ex, wrappedRequest, response)
         } catch (ex: Exception) {
-            handleException(ex, wrappedRequest, response)
+            handleException(handler!!.contentType, ex, wrappedRequest, response)
         }
 
         writeResponse(ctx, request, response)
@@ -52,33 +61,40 @@ class HttpControllerHandler(
     private fun writeResponse(ctx: ChannelHandlerContext, request: FullHttpRequest?, response: HttpResponse) {
         val buf = response.content
         val result = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, response.status, buf)
-
         for (header in response.headers) {
             result.headers().set(header.key, header.value)
         }
+        if (buf != EMPTY_BUFFER) {
+            result.headers().set(HttpHeaderNames.CONTENT_TYPE, response.mimeType!!.value.toString() + "; charset=UTF-8")
+        }
         result.headers().set(HttpHeaderNames.CONTENT_LENGTH, buf!!.readableBytes())
-        result.headers().set(HttpHeaderNames.CONTENT_TYPE, response.mimeType!!.value.toString() + "; charset=UTF-8")
-        HttpUtil.setKeepAlive(result, true)
+        HttpUtil.setKeepAlive(result, if(request != null) HttpUtil.isKeepAlive(request) else false)
 
         ctx.writeAndFlush(result)
     }
 
-    private fun handleRequest(request: WrappedHttpRequest, response: HttpResponse) {
-        val handler = pathHandlerProvider.getMethodHandler(request.path, request.method)
+    private fun handleRequest(handler: HttpHandlerMetaInfo, request: WrappedHttpRequest, response: HttpResponse) {
         if (!handler.stateless) sessionHandler.handleSession(request.originalRequest, response)
         val args = createHandlerArguments(handler, request)
         val result = handler.execute(*args)
-        val responseBody = responseResolverProvider.createResponseBody(result!!, args, handler.contentType)
-        response.modify(handler.status.value, handler.contentType, toByteBuf(responseBody))
-    }
-
-    private fun handleException(exception: Throwable, request: WrappedHttpRequest, response: HttpResponse) {
-        val handler = exceptionHandlerProvider.getExceptionHandler(exception::class)
-        if (handler != null) {
-            val args = createHandlerArguments(handler, request, exception)
-            val result = handler.execute(*args)
+        if(result is String && result.startsWith(REDIRECT_PREFIX)) {
+            response.modify(HttpStatus.FOUND.value, handler.contentType, toByteBuf(""))
+            val pathIdx = result.indexOf(REDIRECT_PREFIX) + REDIRECT_PREFIX.count()
+            response.headers.put(HttpHeaderNames.LOCATION, AsciiString(result.substring(pathIdx)))
+        } else {
             val responseBody = responseResolverProvider.createResponseBody(result!!, args, handler.contentType)
             response.modify(handler.status.value, handler.contentType, toByteBuf(responseBody))
+        }
+
+    }
+
+    private fun handleException(contentType: MimeType, exception: Throwable, request: WrappedHttpRequest, response: HttpResponse) {
+        val exceptionHandler = exceptionHandlerProvider.getExceptionHandler(exception::class, contentType)
+        if (exceptionHandler != null) {
+            val args = createHandlerArguments(exceptionHandler, request, exception)
+            val result = exceptionHandler.execute(*args)
+            val responseBody = responseResolverProvider.createResponseBody(result!!, args, exceptionHandler.contentType)
+            response.modify(exceptionHandler.status.value, exceptionHandler.contentType, toByteBuf(responseBody))
         } else {
             response.modify(INTERNAL_SERVER_ERROR, TEXT_PLAIN, toByteBuf(exception.message ?: ""))
         }

@@ -3,13 +3,12 @@ package io.zensoft.controller
 import io.zensoft.web.annotation.*
 import io.zensoft.domain.UserDto
 import io.zensoft.web.support.*
-import org.springframework.stereotype.Controller
 
 @Controller
 @RequestMapping(value = "/api/user")
 class UserController {
 
-    @RequestMapping(value = "/statefull", method = HttpMethod.GET)
+    @RequestMapping(value = "/stateful", method = HttpMethod.GET)
     fun getCurrentUser(): UserDto {
         return UserDto("Ruslan", "Molchanov", "ruslanys@gmail.com")
     }
@@ -20,10 +19,22 @@ class UserController {
         return UserDto("Ruslan", "Molchanov", "ruslanys@gmail.com")
     }
 
+    @RequestMapping(value = "/search", method = HttpMethod.GET)
+    fun search(user: UserDto): UserDto {
+        return user
+    }
+
     @Stateless
-    @RequestMapping(value = "/current/view/{firstName}", method = HttpMethod.GET)
-    fun viewUser(@PathVariable firstName: String, @RequestParam name: String, @RequestParam lastName: String) {
-        // return UserDto("Ruslan", "Molchanov", "ruslanys@gmail.com"))
+    @RequestMapping(value = "/current/view/{firstName}", method = HttpMethod.GET, produces = MimeType.TEXT_HTML)
+    fun viewUser(@PathVariable firstName: String, @RequestParam name: String, @RequestParam lastName: String, viewModel: ViewModel): String {
+        viewModel.setAttribute("user", UserDto("Ruslan", "Molchanov", "ruslanys@gmail.com"))
+        return "somepage"
+    }
+
+    @Stateless
+    @RequestMapping(value = "/redirect", method = HttpMethod.GET)
+    fun viewUser(): String {
+        return "redirect:/api/user/stateless"
     }
 
     @Stateless

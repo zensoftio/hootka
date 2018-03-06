@@ -14,6 +14,9 @@ class ResponseResolverProvider(
     private lateinit var responseResolvers: List<ResponseResolver>
 
     fun createResponseBody(result: Any, handlerArgs: Array<Any?>, mimeType: MimeType): String {
+        if (result is Unit) {
+            return ""
+        }
         for (responseResolver in responseResolvers) {
             if (responseResolver.supportsContentType(mimeType)) {
                 return responseResolver.resolveResponseBody(result, handlerArgs)

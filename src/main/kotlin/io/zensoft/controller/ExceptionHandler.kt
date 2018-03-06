@@ -13,7 +13,7 @@ class ExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler([IllegalStateException::class, IllegalArgumentException::class])
     fun handleException(ex: Exception): String {
-        return "Something went wrong ${ex.message}"
+        return "Something went wrong:\n ${ex.message}"
     }
 
 }
