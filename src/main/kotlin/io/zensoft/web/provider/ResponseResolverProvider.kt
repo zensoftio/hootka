@@ -13,15 +13,11 @@ class ResponseResolverProvider(
 
     private lateinit var responseResolvers: List<ResponseResolver>
 
-    fun createResponseBody(result: Any, handlerArgs: Array<Any?>, mimeType: MimeType): String {
-        if (result is Unit) {
-            return ""
-        }
-        for (responseResolver in responseResolvers) {
-            if (responseResolver.supportsContentType(mimeType)) {
-                return responseResolver.resolveResponseBody(result, handlerArgs)
-            }
-        }
+    fun createResponseBody(result: Any, handlerArgs: Array<Any?>, mimeType: MimeType): ByteArray {
+        if (result is Unit) return ByteArray(0)
+        responseResolvers
+            .filter { it.supportsContentType(mimeType) }
+            .forEach { return it.resolveResponseBody(result, handlerArgs) }
         throw IllegalArgumentException("Unsupported response content type $mimeType")
     }
 

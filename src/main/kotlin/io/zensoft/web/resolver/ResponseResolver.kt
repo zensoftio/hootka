@@ -6,6 +6,6 @@ interface ResponseResolver {
 
     fun supportsContentType(contentType: MimeType): Boolean
 
-    fun resolveResponseBody(result: Any, handlerArgs: Array<Any?>): String
+    fun resolveResponseBody(result: Any, handlerArgs: Array<Any?>): ByteArray
 
 }

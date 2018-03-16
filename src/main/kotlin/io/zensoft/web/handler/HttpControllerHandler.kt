@@ -1,8 +1,7 @@
 package io.zensoft.web.handler
 
 import io.netty.buffer.ByteBuf
-import io.netty.buffer.Unpooled.EMPTY_BUFFER
-import io.netty.buffer.Unpooled.wrappedBuffer
+import io.netty.buffer.Unpooled.*
 import io.netty.channel.ChannelHandler
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
@@ -58,6 +57,16 @@ class HttpControllerHandler(
         writeResponse(ctx, request, response)
     }
 
+    /**
+     * Marked deprecated as method moved from [io.netty.channel.ChannelHandler] to it's child interface [io.netty.channel.ChannelInboundHandler]
+     */
+    @Throws(Exception::class)
+    @Suppress("OverridingDeprecatedMember")
+    override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
+        log.error("Something went wrong", cause)
+        writeResponse(ctx, null, HttpResponse(TEXT_PLAIN, INTERNAL_SERVER_ERROR, toByteBuf(cause.message ?: "")))
+    }
+
     private fun writeResponse(ctx: ChannelHandlerContext, request: FullHttpRequest?, response: HttpResponse) {
         val buf = response.content
         val result = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, response.status, buf)
@@ -68,7 +77,7 @@ class HttpControllerHandler(
             result.headers().set(HttpHeaderNames.CONTENT_TYPE, response.mimeType!!.value.toString() + "; charset=UTF-8")
         }
         result.headers().set(HttpHeaderNames.CONTENT_LENGTH, buf!!.readableBytes())
-        HttpUtil.setKeepAlive(result, if(request != null) HttpUtil.isKeepAlive(request) else false)
+        HttpUtil.setKeepAlive(result, HttpUtil.isKeepAlive(request))
 
         ctx.writeAndFlush(result)
     }
@@ -119,16 +128,8 @@ class HttpControllerHandler(
         }
     }
 
-    /**
-     * Marked deprecated as method moved from [io.netty.channel.ChannelHandler] to it's child interface [io.netty.channel.ChannelInboundHandler]
-     */
-    @Throws(Exception::class)
-    @Suppress("OverridingDeprecatedMember")
-    override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
-        log.error("Something went wrong", cause)
-        writeResponse(ctx, null, HttpResponse(TEXT_PLAIN, INTERNAL_SERVER_ERROR, toByteBuf(cause.message ?: "")))
-    }
-
     private fun toByteBuf(message: String): ByteBuf = wrappedBuffer(message.toByteArray())
+
+    private fun toByteBuf(message: ByteArray): ByteBuf = wrappedBuffer(message)
 
 }

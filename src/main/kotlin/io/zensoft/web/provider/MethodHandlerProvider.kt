@@ -31,6 +31,11 @@ class MethodHandlerProvider(
 
     @PostConstruct
     private fun init() {
+        initMethodHandlers()
+
+    }
+
+    private fun initMethodHandlers() {
         val beans = context.getBeansWithAnnotation(Controller::class.java).values
         for (bean in beans) {
             val superPath = bean::class.findAnnotation<RequestMapping>()?.value ?: ""
