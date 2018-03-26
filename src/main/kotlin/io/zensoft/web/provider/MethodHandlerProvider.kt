@@ -2,6 +2,7 @@ package io.zensoft.web.provider
 
 import io.zensoft.web.annotation.*
 import io.zensoft.web.exception.HandlerMethodNotFoundException
+import io.zensoft.web.security.AllowancePreconditionsHolder
 import io.zensoft.web.support.HandlerMethodKey
 import io.zensoft.web.support.HttpHandlerMetaInfo
 import io.zensoft.web.support.HttpMethod
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component
 import org.springframework.util.AntPathMatcher
 import javax.annotation.PostConstruct
 import kotlin.collections.HashMap
+import kotlin.reflect.KFunction
 import kotlin.reflect.full.*
 
 @Component
@@ -31,11 +33,6 @@ class MethodHandlerProvider(
 
     @PostConstruct
     private fun init() {
-        initMethodHandlers()
-
-    }
-
-    private fun initMethodHandlers() {
         val beans = context.getBeansWithAnnotation(Controller::class.java).values
         for (bean in beans) {
             val superPath = bean::class.findAnnotation<RequestMapping>()?.value ?: ""
@@ -48,12 +45,13 @@ class MethodHandlerProvider(
                 val status = function.findAnnotation<ResponseStatus>()?.value ?: HttpStatus.OK
                 val type = pathAnnotation.produces
                 val stateless = statelessBeanAnnotation != null || function.findAnnotation<Stateless>() != null
+                val preconditionExpression = function.findAnnotation<AllowInCase>()?.value
                 val key = HandlerMethodKey(path, pathAnnotation.method.toString())
                 if (storage.containsKey(key)) {
                     throw IllegalStateException("Mapping $path is already exists.")
                 } else {
                     storage[key] = HttpHandlerMetaInfo(bean, function, parameterMapping,
-                        stateless, status, type, path, pathAnnotation.method)
+                        stateless, status, type, path, pathAnnotation.method, preconditionExpression)
                 }
             }
         }

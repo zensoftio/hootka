@@ -4,6 +4,7 @@ import io.zensoft.web.annotation.ControllerAdvice
 import io.zensoft.web.annotation.ExceptionHandler
 import io.zensoft.web.annotation.ResponseStatus
 import io.zensoft.web.exception.HandlerMethodNotFoundException
+import io.zensoft.web.exception.PreconditionNotSatisfiedException
 import io.zensoft.web.support.HttpStatus
 import io.zensoft.web.support.MimeType
 import io.zensoft.web.support.ViewModel
@@ -21,9 +22,16 @@ class DefaultExceptionControllerAdvice {
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(values = [HandlerMethodNotFoundException::class], produces = MimeType.TEXT_HTML)
-    fun handleMethodHandlerNotFoundException(ex: HandlerMethodNotFoundException, viewModel: ViewModel): String {
+    fun handleMethodHandlerNotFoundException(): String {
         return "handler_not_found"
     }
+
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler(values = [PreconditionNotSatisfiedException::class], produces = MimeType.TEXT_HTML)
+    fun handlePreconditionNotSatisfiedException(): String {
+        return "forbidden"
+    }
+
 
 
 }

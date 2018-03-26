@@ -3,10 +3,7 @@ package io.zensoft.web.provider
 import io.zensoft.web.annotation.ControllerAdvice
 import io.zensoft.web.annotation.ExceptionHandler
 import io.zensoft.web.annotation.ResponseStatus
-import io.zensoft.web.support.ExceptionHandlerKey
-import io.zensoft.web.support.HttpHandlerMetaInfo
-import io.zensoft.web.support.HttpStatus
-import io.zensoft.web.support.MimeType
+import io.zensoft.web.support.*
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
@@ -36,7 +33,7 @@ class ExceptionHandlerProvider(
                 val parameterMapping = handlerParameterMapperProvider.mapHandlerParameters(function)
                 val status = function.findAnnotation<ResponseStatus>()?.value ?: HttpStatus.OK
                 val handlerMetaInfo = HttpHandlerMetaInfo(advice, function, parameterMapping,
-                    false, status, annotation.produces)
+                    false, status, annotation.produces, "", HttpMethod.GET, null)
                 for (exceptionType in annotation.values) {
                     val key = ExceptionHandlerKey(exceptionType, annotation.produces.toString())
                     if(exceptionHandlers.containsKey(key)) {

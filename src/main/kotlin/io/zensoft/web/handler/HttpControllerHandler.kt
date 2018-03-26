@@ -9,10 +9,12 @@ import io.netty.handler.codec.http.*
 import io.netty.handler.codec.http.HttpResponseStatus.*
 import io.netty.util.AsciiString
 import io.zensoft.web.exception.HandlerMethodNotFoundException
+import io.zensoft.web.exception.PreconditionNotSatisfiedException
 import io.zensoft.web.provider.ExceptionHandlerProvider
 import io.zensoft.web.provider.HandlerParameterMapperProvider
 import io.zensoft.web.provider.MethodHandlerProvider
 import io.zensoft.web.provider.ResponseResolverProvider
+import io.zensoft.web.security.AllowancePreconditionsHolder
 import io.zensoft.web.support.*
 import io.zensoft.web.support.WrappedHttpRequest
 import io.zensoft.web.support.HttpResponse
@@ -30,7 +32,8 @@ class HttpControllerHandler(
     private val sessionStorage: SessionStorage,
     private val sessionHandler: SessionHandler,
     private val handlerParameterProvider: HandlerParameterMapperProvider,
-    private val responseResolverProvider: ResponseResolverProvider
+    private val responseResolverProvider: ResponseResolverProvider,
+    private val preconditionsProvider: AllowancePreconditionsHolder
 ) : SimpleChannelInboundHandler<FullHttpRequest>() {
 
     companion object {
@@ -45,10 +48,13 @@ class HttpControllerHandler(
         var handler: HttpHandlerMetaInfo? = null
         try {
             handler = pathHandlerProvider.getMethodHandler(wrappedRequest.path, wrappedRequest.method)
+            handler.preconditionExpression?.let { preconditionsProvider.checkAllowance(it) }
             handleRequest(handler, wrappedRequest, response)
         } catch (ex: InvocationTargetException) {
             handleException(handler!!.contentType, ex.targetException!!, wrappedRequest, response)
         } catch (ex: HandlerMethodNotFoundException) {
+            handleException(TEXT_HTML, ex, wrappedRequest, response)
+        } catch (ex: PreconditionNotSatisfiedException) {
             handleException(TEXT_HTML, ex, wrappedRequest, response)
         } catch (ex: Exception) {
             handleException(handler!!.contentType, ex, wrappedRequest, response)
@@ -121,7 +127,7 @@ class HttpControllerHandler(
 
     private fun defineContextParameter(parameterType: Class<*>, request: WrappedHttpRequest, exception: Throwable? = null): Any {
         return when {
-            FullHttpRequest::class.java == parameterType -> request
+            WrappedHttpRequest::class.java == parameterType -> request
             Session::class.java == parameterType -> sessionStorage.findSession(request.originalRequest) ?: throw IllegalStateException("Session not found")
             Throwable::class.java.isAssignableFrom(parameterType) -> exception ?: throw IllegalStateException("Unknown exception specified")
             else -> DeserializationUtils.createBeanFromQueryString(parameterType, request.queryParams)
