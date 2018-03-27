@@ -2,7 +2,10 @@ package io.zensoft.controller
 
 import io.zensoft.web.annotation.*
 import io.zensoft.domain.UserDto
-import io.zensoft.web.support.*
+import io.zensoft.web.api.model.HttpMethod
+import io.zensoft.web.api.model.InMemoryFile
+import io.zensoft.web.api.model.MimeType
+import io.zensoft.web.api.model.ViewModel
 
 @Controller
 @RequestMapping(value = "/api/user")
@@ -15,7 +18,6 @@ class UserController {
     }
 
     @Stateless
-    @AllowInCase("roles.hasRole('ADMIN', session)")
     @RequestMapping(value = "/stateless", method = HttpMethod.GET)
     fun getCurrentUserStateless(): UserDto {
         return UserDto("Ruslan", "Molchanov", "ruslanys@gmail.com")

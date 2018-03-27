@@ -3,11 +3,11 @@ package io.zensoft.web.default
 import io.zensoft.web.annotation.ControllerAdvice
 import io.zensoft.web.annotation.ExceptionHandler
 import io.zensoft.web.annotation.ResponseStatus
-import io.zensoft.web.exception.HandlerMethodNotFoundException
-import io.zensoft.web.exception.PreconditionNotSatisfiedException
-import io.zensoft.web.support.HttpStatus
-import io.zensoft.web.support.MimeType
-import io.zensoft.web.validation.ValidationError
+import io.zensoft.web.api.model.HttpStatus
+import io.zensoft.web.api.model.MimeType
+import io.zensoft.web.api.model.ValidationError
+import io.zensoft.web.api.exceptions.HandlerMethodNotFoundException
+import io.zensoft.web.api.exceptions.PreconditionNotSatisfiedException
 import org.slf4j.LoggerFactory
 import javax.validation.ConstraintViolationException
 

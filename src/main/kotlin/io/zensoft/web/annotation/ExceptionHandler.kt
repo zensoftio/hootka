@@ -1,6 +1,6 @@
 package io.zensoft.web.annotation
 
-import io.zensoft.web.support.MimeType
+import io.zensoft.web.api.model.MimeType
 import kotlin.reflect.KClass
 
 @Retention(AnnotationRetention.RUNTIME)

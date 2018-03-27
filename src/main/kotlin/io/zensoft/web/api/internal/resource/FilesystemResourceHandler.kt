@@ -1,0 +1,16 @@
+package io.zensoft.web.api.internal.resource
+
+import io.zensoft.web.api.StaticResourceHandler
+import java.io.File
+
+class FilesystemResourceHandler(
+    private val basePath: String
+): StaticResourceHandler {
+
+    override fun findResource(url: String): File? {
+        val path = basePath + url
+        val file = File(path)
+        return if(file.exists()) file else null
+    }
+
+}
