@@ -1,19 +1,23 @@
 package io.zensoft.web.default
 
-import io.zensoft.web.annotation.AllowancePrecondition
 import io.zensoft.web.annotation.AllowancePreconditions
+import io.zensoft.web.support.Session
 
 @AllowancePreconditions(name = "roles")
 class DefaultAllowancePreconditions {
 
-    @AllowancePrecondition
-    fun hasRole(role: String): Boolean {
-        return "ADMIN" == role
+    fun hasRole(targetRole: String, session: Session): Boolean {
+        val userRole = extractRole(session)
+        return userRole == targetRole
     }
 
-    @AllowancePrecondition
-    fun hasAnyRole(roles: Set<String>): Boolean {
-        return true
+    fun hasAnyRole(roles: Set<String>, session: Session): Boolean {
+        val userRole = extractRole(session)
+        return roles.contains(userRole)
+    }
+
+    private fun extractRole(session: Session): String {
+        return session.getAttribute("user_role") as String
     }
 
 }

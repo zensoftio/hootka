@@ -8,14 +8,14 @@ import io.zensoft.web.support.*
 @RequestMapping(value = "/api/user")
 class UserController {
 
-    @AllowInCase("\${roles.hasRole('USER')}")
+    @AllowInCase("roles.hasRole('USER', session)")
     @RequestMapping(value = "/stateful", method = HttpMethod.GET)
     fun getCurrentUser(): UserDto {
         return UserDto("Ruslan", "Molchanov", "ruslanys@gmail.com")
     }
 
     @Stateless
-    @AllowInCase("\${roles.hasRole('ADMIN')}")
+    @AllowInCase("roles.hasRole('ADMIN', session)")
     @RequestMapping(value = "/stateless", method = HttpMethod.GET)
     fun getCurrentUserStateless(): UserDto {
         return UserDto("Ruslan", "Molchanov", "ruslanys@gmail.com")

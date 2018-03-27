@@ -7,12 +7,16 @@ import io.zensoft.web.exception.HandlerMethodNotFoundException
 import io.zensoft.web.exception.PreconditionNotSatisfiedException
 import io.zensoft.web.support.HttpStatus
 import io.zensoft.web.support.MimeType
-import io.zensoft.web.support.ViewModel
 import io.zensoft.web.validation.ValidationError
+import org.slf4j.LoggerFactory
 import javax.validation.ConstraintViolationException
 
 @ControllerAdvice
 class DefaultExceptionControllerAdvice {
+
+    companion object {
+        private val log = LoggerFactory.getLogger(this::class.java)
+    }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler([ConstraintViolationException::class])
@@ -28,10 +32,9 @@ class DefaultExceptionControllerAdvice {
 
     @ResponseStatus(HttpStatus.FORBIDDEN)
     @ExceptionHandler(values = [PreconditionNotSatisfiedException::class], produces = MimeType.TEXT_HTML)
-    fun handlePreconditionNotSatisfiedException(): String {
+    fun handlePreconditionNotSatisfiedException(ex: PreconditionNotSatisfiedException): String {
+        log.error("Precondition processing failed. ${ex.message}")
         return "forbidden"
     }
-
-
 
 }

@@ -48,7 +48,7 @@ class HttpControllerHandler(
         var handler: HttpHandlerMetaInfo? = null
         try {
             handler = pathHandlerProvider.getMethodHandler(wrappedRequest.path, wrappedRequest.method)
-            handler.preconditionExpression?.let { preconditionsProvider.checkAllowance(it) }
+            handler.preconditionExpression?.let { preconditionsProvider.checkAllowance(it, wrappedRequest) }
             handleRequest(handler, wrappedRequest, response)
         } catch (ex: InvocationTargetException) {
             handleException(handler!!.contentType, ex.targetException!!, wrappedRequest, response)
