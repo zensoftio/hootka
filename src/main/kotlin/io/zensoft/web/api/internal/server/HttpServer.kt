@@ -1,4 +1,4 @@
-package io.zensoft.web
+package io.zensoft.web.api.internal.server
 
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.ChannelOption
@@ -11,10 +11,11 @@ import org.springframework.stereotype.Component
 import java.util.*
 import javax.annotation.PreDestroy
 
-
 @Component
-class HttpServer(@Value("\${server.port:8080}") port: Int,
-                 private val httpChannelInitializer: HttpChannelInitializer) : CommandLineRunner {
+class HttpServer(
+    @Value("\${server.port:8080}") port: Int,
+    private val httpChannelInitializer: HttpChannelInitializer
+) : CommandLineRunner {
 
     companion object {
         private val log = LoggerFactory.getLogger(HttpServer::class.java)
@@ -56,7 +57,7 @@ class HttpServer(@Value("\${server.port:8080}") port: Int,
     }
 
     @PreDestroy
-    fun shutdown() {
+    private fun shutdown() {
         log.info("Server is shutting down.")
         bossGroup.shutdownGracefully()
         workerGroup.shutdownGracefully()
