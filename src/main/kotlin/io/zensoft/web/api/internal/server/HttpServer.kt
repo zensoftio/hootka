@@ -22,7 +22,7 @@ class HttpServer(
     }
 
     private val bossGroup = EpollEventLoopGroup(1)
-    private val workerGroup = EpollEventLoopGroup() // 12?
+    private val workerGroup = EpollEventLoopGroup(20) // 12?
     private val port: Int
 
     init {
@@ -37,12 +37,12 @@ class HttpServer(
     override fun run(vararg args: String?) {
         try {
             val sb = ServerBootstrap()
-                    .group(bossGroup, workerGroup)
-                    .channel(EpollServerSocketChannel::class.java)
-                    .childHandler(httpChannelInitializer)
-                    .option(ChannelOption.SO_BACKLOG, 512)
-                    .childOption(ChannelOption.SO_KEEPALIVE, true)
-                    .childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, 3000)
+                .group(bossGroup, workerGroup)
+                .channel(EpollServerSocketChannel::class.java)
+                .childHandler(httpChannelInitializer)
+                .option(ChannelOption.SO_BACKLOG, 512)
+                .childOption(ChannelOption.SO_KEEPALIVE, true)
+                .childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, 3000)
 
             val future = sb.bind(port)
             log.info("Server is started on {} port.", port)

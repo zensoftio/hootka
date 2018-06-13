@@ -1,19 +1,18 @@
 package io.zensoft.web.api.internal.http
 
-import io.netty.handler.codec.http.FullHttpRequest
 import io.zensoft.web.api.*
-import org.springframework.beans.factory.annotation.Value
+import io.zensoft.web.api.properties.WebConfig
 import org.springframework.stereotype.Component
 
 @Component
-class NettySessionHandler(
-    @Value("\${server.session.cookie.name:session_id}") private val sessionCookieName: String,
+class DefaultSessionHandler(
+    private val webConfig: WebConfig,
     private val sessionStorage: SessionStorage
-): SessionHandler<FullHttpRequest> {
+) : SessionHandler {
 
-    override fun getOrCreateSession(request: WrappedHttpRequest<FullHttpRequest>, response: WrappedHttpResponse): HttpSession {
+    override fun getOrCreateSession(request: WrappedHttpRequest, response: WrappedHttpResponse): HttpSession {
         val cookies = request.getCookies()
-        val sessionId = cookies[sessionCookieName]
+        val sessionId = cookies[webConfig.session.cookieName]
         var session = sessionId
             ?.let { sessionStorage.findSession(sessionId) }
         if (session == null) {

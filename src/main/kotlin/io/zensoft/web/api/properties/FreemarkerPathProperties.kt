@@ -8,6 +8,6 @@ import org.springframework.validation.annotation.Validated
 @Validated
 @Component
 class FreemarkerPathProperties(
-    var prefix: String = "",
-    var suffix: String = ""
+    var prefix: String = "templates/",
+    var suffix: String = ".ftl"
 )

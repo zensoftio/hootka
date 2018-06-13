@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class HttpChannelInitializer(
-        private val httpControllerHandler: HttpControllerHandler
+    private val httpControllerHandler: HttpControllerHandler
 ) : ChannelInitializer<SocketChannel>() {
 
     override fun initChannel(ch: SocketChannel) {

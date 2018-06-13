@@ -1,16 +1,21 @@
 package io.zensoft.web.api.internal.resource
 
 import io.zensoft.web.api.StaticResourceHandler
-import java.io.File
+import java.io.InputStream
 
 class ClasspathResourceHandler(
-    private val basePath: String
-): StaticResourceHandler {
+    private val mappedPath: String,
+    private val basePath: String,
+    private val cacheable: Boolean = true
+) : StaticResourceHandler {
 
-    override fun findResource(url: String): File? {
-        val path = basePath + url
-        val uri = this::class.java.classLoader.getResource(path).toURI()
-        return if(uri != null) File(uri) else null
+    override fun getPath(): String = mappedPath
+
+    override fun findResource(url: String): InputStream? {
+        val path = "$basePath/$url"
+        return this::class.java.classLoader.getResourceAsStream(path)
     }
+
+    override fun isCacheable(): Boolean = cacheable
 
 }

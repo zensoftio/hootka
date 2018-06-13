@@ -3,8 +3,10 @@ package io.zensoft.web.api.internal.provider
 import io.zensoft.web.api.HttpRequestMapper
 import io.zensoft.web.api.ValidationProvider
 import io.zensoft.web.api.WrappedHttpRequest
+import io.zensoft.web.api.exceptions.HandlerParameterInstantiationException
 import io.zensoft.web.api.internal.support.HandlerMethodParameter
 import io.zensoft.web.api.internal.support.HttpHandlerMetaInfo
+import io.zensoft.web.api.internal.support.RequestContext
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
@@ -21,10 +23,14 @@ class HandlerParameterMapperProvider(
 
     private lateinit var mappers: List<HttpRequestMapper>
 
-    fun createParameterValue(parameter: HandlerMethodParameter, request: WrappedHttpRequest<*>, handlerMethod: HttpHandlerMetaInfo): Any? {
+    fun createParameterValue(parameter: HandlerMethodParameter, context: RequestContext, handlerMethod: HttpHandlerMetaInfo): Any? {
         for (mapper in mappers) {
             if (mapper.supportsAnnotation(listOf(parameter.annotation!!))) {
-                val argument = mapper.createValue(parameter, request, handlerMethod)
+                val argument = try {
+                    mapper.createValue(parameter, context, handlerMethod)
+                } catch (ex: Exception) {
+                    throw HandlerParameterInstantiationException(ex.message)
+                }
                 if (argument != null && parameter.validationRequired) {
                     validationService.validate(argument)
                 }

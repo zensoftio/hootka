@@ -5,7 +5,7 @@ import io.zensoft.web.api.HttpSession
 class DefaultHttpSession(
     private val id: String,
     private val attributes: MutableMap<String, Any> = HashMap()
-): HttpSession {
+) : HttpSession {
 
     override fun getId(): String {
         return id
@@ -19,7 +19,7 @@ class DefaultHttpSession(
         return attributes[key]
     }
 
-    override fun <T>findTypedAttribute(key: String, type: Class<T>): T? {
+    override fun <T> findTypedAttribute(key: String, type: Class<T>): T? {
         val attribute = attributes[key]
         return attribute?.let { type.cast(attribute) }
     }

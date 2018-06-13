@@ -1,20 +1,21 @@
 package io.zensoft.web.api.internal.mapper
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.zensoft.web.annotation.RequestBody
 import io.zensoft.web.api.HttpRequestMapper
 import io.zensoft.web.api.WrappedHttpRequest
 import io.zensoft.web.api.internal.support.HandlerMethodParameter
 import io.zensoft.web.api.internal.support.HttpHandlerMetaInfo
+import io.zensoft.web.api.internal.support.RequestContext
 import org.springframework.stereotype.Component
 import javax.validation.Valid
 import kotlin.reflect.KParameter
 import kotlin.reflect.jvm.javaType
 
 @Component
-class RequestBodyMapper: HttpRequestMapper {
-
-    private val jsonMapper = jacksonObjectMapper()
+class RequestBodyMapper(
+    private val jsonMapper: ObjectMapper
+) : HttpRequestMapper {
 
     override fun supportsAnnotation(annotations: List<Annotation>): Boolean {
         return annotations.find { it is RequestBody } != null
@@ -27,8 +28,8 @@ class RequestBodyMapper: HttpRequestMapper {
             parameter.type.isMarkedNullable, annotation, validationRequired)
     }
 
-    override fun createValue(parameter: HandlerMethodParameter, request: WrappedHttpRequest<*>, handlerMethod: HttpHandlerMetaInfo): Any {
-        val iStream = request.getContentStream()
+    override fun createValue(parameter: HandlerMethodParameter, context: RequestContext, handlerMethod: HttpHandlerMetaInfo): Any {
+        val iStream = context.request.getContentStream()
         return jsonMapper.readValue(iStream, parameter.clazz)
     }
 

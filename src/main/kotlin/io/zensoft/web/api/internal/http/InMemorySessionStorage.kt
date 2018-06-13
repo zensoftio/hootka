@@ -6,7 +6,7 @@ import io.zensoft.web.api.HttpSession
 import io.zensoft.web.api.SessionStorage
 import io.zensoft.web.api.WrappedHttpRequest
 import io.zensoft.web.api.WrappedHttpResponse
-import org.springframework.beans.factory.annotation.Value
+import io.zensoft.web.api.properties.WebConfig
 import org.springframework.stereotype.Component
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -14,9 +14,8 @@ import javax.annotation.PostConstruct
 
 @Component
 class InMemorySessionStorage(
-    @Value("\${server.session.cookie.name:session_id}") private val sessionCookieName: String,
-    @Value("\${server.session.cookie.max-age:1800}")private val sessionTimeout: Long
-): SessionStorage {
+    private val webConfig: WebConfig
+) : SessionStorage {
 
     private lateinit var storage: Cache<String, HttpSession>
 
@@ -33,19 +32,24 @@ class InMemorySessionStorage(
 
     override fun createAndAssignSession(response: WrappedHttpResponse): HttpSession {
         val session = this.createSession()
-        response.setCookie(sessionCookieName, session.getId())
+        response.setCookie(webConfig.session.cookieName, session.getId(), true, null)
         return session
     }
 
-    override fun resolveSession(request: WrappedHttpRequest<*>): HttpSession? {
-        val cookie = request.getCookies()[sessionCookieName]
+    override fun resolveSession(request: WrappedHttpRequest): HttpSession? {
+        val cookie = request.getCookies()[webConfig.session.cookieName]
         return cookie?.let { findSession(it) }
+    }
+
+    override fun removeSession(request: WrappedHttpRequest) {
+        val cookie = request.getCookies()[webConfig.session.cookieName]
+        cookie?.let { storage.invalidate(it) }
     }
 
     @PostConstruct
     private fun init() {
         storage = Caffeine.newBuilder()
-            .expireAfterAccess(sessionTimeout, TimeUnit.SECONDS)
+            .expireAfterAccess(webConfig.session.cookieMaxAge, TimeUnit.SECONDS)
             .build<String, HttpSession>()
     }
 

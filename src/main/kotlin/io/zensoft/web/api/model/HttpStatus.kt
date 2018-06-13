@@ -11,5 +11,8 @@ enum class HttpStatus(
     BAD_REQUEST(HttpResponseStatus.BAD_REQUEST),
     METHOD_NOT_ALLOWED(HttpResponseStatus.METHOD_NOT_ALLOWED),
     INTERNAL_SERVER_ERROR(HttpResponseStatus.INTERNAL_SERVER_ERROR),
-    FORBIDDEN(HttpResponseStatus.FORBIDDEN)
+    FORBIDDEN(HttpResponseStatus.FORBIDDEN),
+    UNAUTHORIZED(HttpResponseStatus.UNAUTHORIZED),
+    CONFLICT(HttpResponseStatus.CONFLICT),
+    MOVED_PERMANENTLY(HttpResponseStatus.MOVED_PERMANENTLY)
 }

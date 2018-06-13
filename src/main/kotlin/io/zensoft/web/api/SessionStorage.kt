@@ -8,6 +8,8 @@ interface SessionStorage {
 
     fun createAndAssignSession(response: WrappedHttpResponse): HttpSession
 
-    fun resolveSession(request: WrappedHttpRequest<*>): HttpSession?
+    fun resolveSession(request: WrappedHttpRequest): HttpSession?
+
+    fun removeSession(request: WrappedHttpRequest)
 
 }

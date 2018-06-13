@@ -7,10 +7,10 @@ import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder
 import io.netty.handler.codec.http.multipart.InterfaceHttpData
 import io.zensoft.web.annotation.MultipartFile
 import io.zensoft.web.api.HttpRequestMapper
-import io.zensoft.web.api.model.InMemoryFile
-import io.zensoft.web.api.WrappedHttpRequest
 import io.zensoft.web.api.internal.support.HandlerMethodParameter
 import io.zensoft.web.api.internal.support.HttpHandlerMetaInfo
+import io.zensoft.web.api.internal.support.RequestContext
+import io.zensoft.web.api.model.InMemoryFile
 import org.springframework.stereotype.Component
 import kotlin.reflect.KParameter
 import kotlin.reflect.jvm.javaType
@@ -22,21 +22,30 @@ class NettyMultipartFileMapper : HttpRequestMapper {
         return annotations.find { it is MultipartFile } != null
     }
 
-    override fun createValue(parameter: HandlerMethodParameter, request: WrappedHttpRequest<*>, handlerMethod: HttpHandlerMetaInfo): Any {
-        val multipartContent = HttpPostRequestDecoder(request.getWrappedRequest() as FullHttpRequest)
+    override fun createValue(parameter: HandlerMethodParameter, context: RequestContext, handlerMethod: HttpHandlerMetaInfo): Any {
+        val multipartContent = HttpPostRequestDecoder(context.request.getWrappedRequest() as FullHttpRequest)
         val files = mutableListOf<InMemoryFile>()
+        val annotation = parameter.annotation!! as MultipartFile
         while (multipartContent.hasNext()) {
             val content = multipartContent.next()
-            when(content.httpDataType) {
+            when (content.httpDataType) {
                 InterfaceHttpData.HttpDataType.FileUpload -> {
                     val fileUpload = content as FileUpload
+                    val extension = extractExtension(fileUpload.filename)
+                    if (annotation.acceptExtensions.isNotEmpty() && !annotation.acceptExtensions.contains(extension)) {
+                        throw IllegalArgumentException("Unsupported file type with extension $extension")
+                    }
                     files.add(InMemoryFile(fileUpload.filename, ByteBufInputStream(fileUpload.byteBuf)))
                 }
                 else -> throw IllegalStateException("Unprocessed data type")
             }
 
         }
-        return files.first()
+        return if (parameter.clazz.isArray) {
+            return files.toTypedArray()
+        } else {
+            files.first()
+        }
     }
 
     override fun mapParameter(parameter: KParameter, annotations: List<Annotation>): HandlerMethodParameter {
@@ -44,6 +53,8 @@ class NettyMultipartFileMapper : HttpRequestMapper {
         return HandlerMethodParameter(parameter.name!!, parameter.type.javaType as Class<*>,
             parameter.type.isMarkedNullable, annotation)
     }
+
+    private fun extractExtension(fileName: String): String = fileName.substring(fileName.lastIndexOf('.') + 1)
 
 
 }

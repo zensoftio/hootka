@@ -4,7 +4,7 @@ import io.zensoft.web.api.model.HttpMethod
 import java.io.InputStream
 import java.nio.charset.Charset
 
-interface WrappedHttpRequest<out T> {
+interface WrappedHttpRequest {
 
     fun getPath(): String
 
@@ -16,12 +16,14 @@ interface WrappedHttpRequest<out T> {
 
     fun getContentAsString(charset: Charset): String
 
-    fun getHeaders(): Map<String, String>
+    fun getHeader(key: String): String?
 
     fun getCookies(): Map<String, String>
 
-    fun getWrappedRequest(): T
+    fun getWrappedRequest(): Any
 
     fun getReferer(): String?
+
+    fun getRemoteAddress(): String
 
 }

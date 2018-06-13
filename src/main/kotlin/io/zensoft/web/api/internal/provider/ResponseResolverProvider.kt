@@ -1,6 +1,7 @@
 package io.zensoft.web.api.internal.provider
 
 import io.zensoft.web.api.HttpResponseResolver
+import io.zensoft.web.api.WrappedHttpResponse
 import io.zensoft.web.api.model.MimeType
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
@@ -13,11 +14,11 @@ class ResponseResolverProvider(
 
     private lateinit var responseResolvers: List<HttpResponseResolver>
 
-    fun createResponseBody(result: Any, handlerArgs: Array<Any?>, mimeType: MimeType): ByteArray {
-        if (result is Unit) return ByteArray(0)
+    fun createResponseBody(result: Any, handlerArgs: Array<Any?>, mimeType: MimeType, response: WrappedHttpResponse): ByteArray {
+        if (result === Unit) return ByteArray(0)
         responseResolvers
             .filter { it.supportsContentType(mimeType) }
-            .forEach { return it.resolveResponseBody(result, handlerArgs) }
+            .forEach { return it.resolveResponseBody(result, handlerArgs, response) }
         throw IllegalArgumentException("Unsupported response content type $mimeType")
     }
 

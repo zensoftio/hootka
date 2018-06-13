@@ -2,4 +2,6 @@ package io.zensoft.web.annotation
 
 @Target(AnnotationTarget.VALUE_PARAMETER)
 @Retention(AnnotationRetention.RUNTIME)
-annotation class MultipartFile
+annotation class MultipartFile(
+    val acceptExtensions: Array<String> = []
+)
