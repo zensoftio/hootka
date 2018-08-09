@@ -1,24 +1,24 @@
 package io.zensoft.web.api.internal.utils
 
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.isKotlinClass
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl
 import java.lang.reflect.Field
-import kotlin.reflect.full.isSubclassOf
-import kotlin.reflect.full.primaryConstructor
+import kotlin.reflect.full.*
 import kotlin.reflect.jvm.javaType
 
 object DeserializationUtils {
 
-    private val mapper = jacksonObjectMapper()
+    private val mapper = jacksonObjectMapper().registerModule(JavaTimeModule())
 
     fun createBeanFromQueryString(beanClass: Class<*>, queryParams: Map<String, List<String>>): Any {
         val args = mutableMapOf<String, Any>()
 
-        if(beanClass.isKotlinClass()) {
-            val constructor = beanClass.kotlin.primaryConstructor
-            for (field in constructor!!.parameters) {
-                val type = field.type.javaType
+        if (beanClass.isKotlinClass()) {
+            val fields = getFields(beanClass)
+            for (field in fields) {
+                val type = field.type
                 val clazz = if (type is ParameterizedTypeImpl) {
                     type.rawType as Class<*>
                 } else {

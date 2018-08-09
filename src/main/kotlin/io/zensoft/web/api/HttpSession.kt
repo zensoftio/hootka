@@ -8,7 +8,7 @@ interface HttpSession {
 
     fun findAttribute(key: String): Any?
 
-    fun <T>findTypedAttribute(key: String, type: Class<T>): T?
+    fun <T> findTypedAttribute(key: String, type: Class<T>): T?
 
     fun setAttribute(key: String, value: Any)
 

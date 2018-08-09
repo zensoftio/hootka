@@ -4,6 +4,7 @@ import io.zensoft.web.api.HttpRequestMapper
 import io.zensoft.web.api.WrappedHttpRequest
 import io.zensoft.web.api.internal.support.HandlerMethodParameter
 import io.zensoft.web.api.internal.support.HttpHandlerMetaInfo
+import io.zensoft.web.api.internal.support.RequestContext
 import io.zensoft.web.api.internal.utils.DeserializationUtils
 import org.springframework.stereotype.Component
 import javax.validation.Valid
@@ -11,14 +12,14 @@ import kotlin.reflect.KParameter
 import kotlin.reflect.jvm.javaType
 
 @Component
-class ValidMapper: HttpRequestMapper {
+class ValidMapper : HttpRequestMapper {
 
     override fun supportsAnnotation(annotations: List<Annotation>): Boolean {
         return annotations.size == 1 && annotations.find { it is Valid } != null
     }
 
-    override fun createValue(parameter: HandlerMethodParameter, request: WrappedHttpRequest<*>, handlerMethod: HttpHandlerMetaInfo): Any? {
-        return DeserializationUtils.createBeanFromQueryString(parameter.clazz, request.getQueryParameters())
+    override fun createValue(parameter: HandlerMethodParameter, context: RequestContext, handlerMethod: HttpHandlerMetaInfo): Any? {
+        return DeserializationUtils.createBeanFromQueryString(parameter.clazz, context.request.getQueryParameters())
     }
 
     override fun mapParameter(parameter: KParameter, annotations: List<Annotation>): HandlerMethodParameter {

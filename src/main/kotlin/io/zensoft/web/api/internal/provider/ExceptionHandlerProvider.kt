@@ -3,11 +3,11 @@ package io.zensoft.web.api.internal.provider
 import io.zensoft.web.annotation.ControllerAdvice
 import io.zensoft.web.annotation.ExceptionHandler
 import io.zensoft.web.annotation.ResponseStatus
+import io.zensoft.web.api.internal.support.ExceptionHandlerKey
+import io.zensoft.web.api.internal.support.HttpHandlerMetaInfo
 import io.zensoft.web.api.model.HttpMethod
 import io.zensoft.web.api.model.HttpStatus
 import io.zensoft.web.api.model.MimeType
-import io.zensoft.web.api.internal.support.ExceptionHandlerKey
-import io.zensoft.web.api.internal.support.HttpHandlerMetaInfo
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
@@ -23,7 +23,7 @@ class ExceptionHandlerProvider(
 
     private val exceptionHandlers = HashMap<ExceptionHandlerKey, HttpHandlerMetaInfo>()
 
-    fun getExceptionHandler(exceptionType: KClass<out Throwable>, contentType: MimeType): HttpHandlerMetaInfo? {
+    fun getExceptionHandler(exceptionType: KClass<out Throwable>, contentType: MimeType = MimeType.APPLICATION_JSON): HttpHandlerMetaInfo? {
         val key = ExceptionHandlerKey(exceptionType, contentType.toString())
         return exceptionHandlers[key]
     }
@@ -40,7 +40,7 @@ class ExceptionHandlerProvider(
                     false, status, annotation.produces, "", HttpMethod.GET, null)
                 for (exceptionType in annotation.values) {
                     val key = ExceptionHandlerKey(exceptionType, annotation.produces.toString())
-                    if(exceptionHandlers.containsKey(key)) {
+                    if (exceptionHandlers.containsKey(key)) {
                         throw IllegalStateException("Only one handler should be applied on $exceptionType")
                     }
                     exceptionHandlers[key] = handlerMetaInfo

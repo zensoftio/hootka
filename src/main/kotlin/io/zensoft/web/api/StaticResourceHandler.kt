@@ -1,9 +1,13 @@
 package io.zensoft.web.api
 
-import java.io.File
+import java.io.InputStream
 
 interface StaticResourceHandler {
 
-    fun findResource(url: String): File?
+    fun getPath(): String
+
+    fun findResource(url: String): InputStream?
+
+    fun isCacheable(): Boolean
 
 }

@@ -1,7 +1,7 @@
 package io.zensoft.web.api
 
-interface SessionHandler<in T> {
+interface SessionHandler {
 
-    fun getOrCreateSession(request: WrappedHttpRequest<T>, response: WrappedHttpResponse): HttpSession
+    fun getOrCreateSession(request: WrappedHttpRequest, response: WrappedHttpResponse): HttpSession
 
 }

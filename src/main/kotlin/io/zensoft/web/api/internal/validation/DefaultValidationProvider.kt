@@ -6,7 +6,7 @@ import javax.validation.ConstraintViolationException
 import javax.validation.Validation
 
 @Component
-class DefaultValidationProvider: ValidationProvider {
+class DefaultValidationProvider : ValidationProvider {
 
     private val validatorFactory = Validation.buildDefaultValidatorFactory()
 

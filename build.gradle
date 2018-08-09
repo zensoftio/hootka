@@ -19,6 +19,7 @@ ext.nettyVersion = '4.1.21.Final'
 
 dependencies {
     compile('org.springframework.boot:spring-boot-starter')
+    compile('org.springframework.security:spring-security-crypto')
     compile("io.netty:netty-all:${nettyVersion}")
 
     compile("org.freemarker:freemarker:2.3.23")
@@ -26,10 +27,14 @@ dependencies {
     // Utilities
     compile('com.github.ben-manes.caffeine:caffeine:2.6.2')
 
+    compile('org.apache.commons:commons-lang3:3.1')
+    compile('commons-io:commons-io:2.6')
+
     // Kotlin
     compile("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}")
     compile("org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}")
     compile("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.4.1")
+    compile('com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.9.3')
 
     // Validation
     compile("javax.validation:validation-api:2.0.0.Final")
