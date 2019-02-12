@@ -2,8 +2,12 @@ package io.zensoft.web.api.internal.server
 
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.ChannelOption
+import io.netty.channel.EventLoopGroup
+import io.netty.channel.ServerChannel
 import io.netty.channel.epoll.EpollEventLoopGroup
 import io.netty.channel.epoll.EpollServerSocketChannel
+import io.netty.channel.nio.NioEventLoopGroup
+import io.netty.channel.socket.nio.NioServerSocketChannel
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.CommandLineRunner
@@ -21,8 +25,9 @@ class HttpServer(
         private val log = LoggerFactory.getLogger(HttpServer::class.java)
     }
 
-    private val bossGroup = EpollEventLoopGroup(1)
-    private val workerGroup = EpollEventLoopGroup(20) // 12?
+    private lateinit var bossGroup: EventLoopGroup
+    private lateinit var workerGroup: EventLoopGroup
+    private lateinit var socketChannelClass: Class<out ServerChannel>
     private val port: Int
 
     init {
@@ -31,6 +36,16 @@ class HttpServer(
         } else {
             this.port = port
         }
+        val osName = System.getProperty("os.name").toLowerCase()
+        if (osName.contains("nix")) {
+            bossGroup = EpollEventLoopGroup(1)
+            workerGroup = EpollEventLoopGroup(Runtime.getRuntime().availableProcessors())
+            socketChannelClass = EpollServerSocketChannel::class.java
+        } else {
+            bossGroup = NioEventLoopGroup(1)
+            workerGroup = NioEventLoopGroup(Runtime.getRuntime().availableProcessors())
+            socketChannelClass = NioServerSocketChannel::class.java
+        }
     }
 
 
@@ -38,7 +53,7 @@ class HttpServer(
         try {
             val sb = ServerBootstrap()
                 .group(bossGroup, workerGroup)
-                .channel(EpollServerSocketChannel::class.java)
+                .channel(socketChannelClass)
                 .childHandler(httpChannelInitializer)
                 .option(ChannelOption.SO_BACKLOG, 512)
                 .childOption(ChannelOption.SO_KEEPALIVE, true)

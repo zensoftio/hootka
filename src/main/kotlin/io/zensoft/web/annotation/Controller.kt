@@ -1,8 +1,8 @@
 package io.zensoft.web.annotation
 
-import org.springframework.stereotype.Component
+import org.springframework.stereotype.Controller
 
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.CLASS)
-@Component
+@Controller
 annotation class Controller

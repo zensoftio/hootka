@@ -1,13 +1,14 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.2.21'
     id 'org.jetbrains.kotlin.plugin.spring' version '1.2.21'
-    id 'org.jetbrains.kotlin.plugin.jpa' version '1.2.21'
-    id 'org.springframework.boot' version '1.5.10.RELEASE'
+    id 'org.springframework.boot' version '2.0.2.RELEASE'
+    id 'maven-publish'
 }
 
+apply plugin: "io.spring.dependency-management"
 
-group = 'io.zensoft.inhouse'
-version = '0.1'
+group = 'io.zensoft.web'
+version = '0.1.0'
 sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -19,6 +20,7 @@ ext.nettyVersion = '4.1.21.Final'
 
 dependencies {
     compile('org.springframework.boot:spring-boot-starter')
+    compile("org.springframework.boot:spring-boot-configuration-processor")
     compile('org.springframework.security:spring-security-crypto')
     compile("io.netty:netty-all:${nettyVersion}")
 
@@ -41,12 +43,6 @@ dependencies {
     compile("javax.el:javax.el-api:3.0.0")
     compile("org.glassfish:javax.el:3.0.0")
     compile("org.hibernate.validator:hibernate-validator:6.0.1.Final")
-
-    // DevTools
-    compileOnly('org.springframework.boot:spring-boot-configuration-processor')
-
-    // Tests
-    testCompile('org.springframework.boot:spring-boot-starter-test')
 }
 
 // Jar
@@ -55,6 +51,9 @@ jar {
         attributes("Implementation-Version": version)
     }
 }
+
+bootJar.enabled = false
+jar.enabled = true
 
 // Kotlin
 compileKotlin {
@@ -70,6 +69,11 @@ compileTestKotlin {
 sourceSets {
     main.kotlin.srcDirs += 'src/main/kotlin'
 }
-noArg {
-    annotations("javax.persistence.MappedSuperclass", "javax.persistence.Entity")
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+        }
+    }
 }
