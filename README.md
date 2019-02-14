@@ -6,112 +6,302 @@ The repository is a **high**-performance tech stack based on [Spring Boot](https
 that using [Netty](https://netty.io/) instead of Spring Web MVC / Spring Webflux.
 
 
+## Installation
+
+Using gradle
+
+```groovy
+compile("io.zensoft.web:spring-boot-netty:1.0.0")
+```
+
+Using maven
+
+```xml
+<dependency>
+    <groupId>io.zensoft.web</groupId>
+    <artifactId>spring-boot-netty</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
+## Configuration
+
+### application.properties parameters
+
+Below listed parameters, which are available for configuration
+
+|                    Name                     |  Default Value  |                       Description                         |
+|:-------------------------------------------:|:---------------:|:---------------------------------------------------------:|
+|                server.port                  |       8080      |                 Port, listened by server                  |
+|          web.session.cookie-name            |    session_id   |             Name of session identifier cookie             |
+|         web.session.cookie-max-age          |       1800      |     Time, when session cookie considered as not expired   |
+|     web.security.remember-me-token-name     |   remind_token  |                Name of remember-me cookie                 |
+|    web.security.remember-me-token-max-age   |     2592000     |  Time, when remember-me cookie considered as not expired  |
+|        web.security.remember-me-salt        |   default_salt  |        Salt, used for generation of remember-me token     |
+|            freemarker.path.prefix           |    templates/   |  Directory path, where freemarker templates located       |
+|            freemarker.path.suffix           |       .ftl      |              Freemarker templates extension               |
+
+### Static resources configuration
+
+There are two default types of static resource providers:
+ - ClasspathResourceHandler - resolves static resources, located in classpath
+ - FilesystemResourceHandler - resolves static resources, located in file system
+ 
+Both of them has three parameters to configure:
+
+|            Name           |    Type    |  Required  |                       Description                        |
+|:-------------------------:|:----------:|:----------:|:--------------------------------------------------------:|
+|         mappedPath        |   String   |     Yes    |            Path to get static resource from url          |
+|          basePath         |   String   |     Yes    |               Path to actual folder location             |
+|         cacheable         |   Boolean  |     No     |  Flag, whether allow resource caching by browser or not  |
+
+### Security configuration
+
+#### User details service
+
+UserDetailsService interface responsible for fetching user information. 
+Implement method `findUserDetailsByUsername(value: String): UserDetails?`, getting user from any storage 
+
+#### Authentication provider
+
+There is Default SecurityProvider interface implementation, which requires instances of SessionStorage and UserDetailsService. 
+In case, if `remember me` functionality required, instance of RememberMeService (described below) should also be specified 
+in DefaultSecurityProvider constructor
+
+```kotlin
+DefaultSecurityProvider(sessionStorage, userDetailsService, rememberMeService)
+```
+
+#### Remember me service
+
+There is Default RememberMeService interface implementation. It creates special token, based on current user's login 
+and password. To create instance, there should be 4 parameters specified:
+- Name of cookie, where token will be stored
+- Cookie's expiry period
+- Salt for token generation
+- User Details Service for auto authentication
+
+```kotlin
+DefaultRememberMeService(rememberMeTokenName, rememberMeTokenMaxAge, rememberMeSalt, userDetailsService)
+```
+
+## Usage
+
+
+### Annotation description
+
+|        Name       |  Allowed usage  |                                                               Description                                                         |
+|:------------------|:---------------:|:---------------------------------------------------------------------------------------------------------------------------------:|
+| @Controller       |      CLASS      |                                                  Describes class as handler container                                             |
+| @ControllerAdvice |      CLASS      |                                          Describes class as handler post processors container                                     |
+| @ResponseStatus   | CLASS, FUNCTION |                                               Marks response with specific HTTP status                                            |
+| @Stateless        | CLASS, FUNCTION |                                       Marks handler that it does not require session resolution                                   |
+| @PreAuthorize     | CLASS, FUNCTION | Allows specification of filter method, whether incoming request allowed to be handled. Not working in combination with @Stateless |
+| @RequestMapping   | CLASS, FUNCTION |                                        Specifies path and method, which handler should process                                    |
+| @ExceptionHandler |     FUNCTION    |                                          Marks method, which handles specific exception type                                      |
+| @ModelAttribute   | VALUE_PARAMETER |                                 Marks that parameter is deserialized form-encoded content in request                              |
+| @MultipartFile    | VALUE_PARAMETER |                                           Marks that parameter is content of uploaded file                                        |
+| @MultipartObject  | VALUE_PARAMETER |                                          Marks that parameter is request's multipart content                                      |
+| @PathVariable     | VALUE_PARAMETER |                 Marks that parameter should be taken from request path, instead of specified wildcard (for example `{id}`)        |
+| @Principal        | VALUE_PARAMETER |                                           Marks that parameter contains user information                                          |
+| @RequestBody      | VALUE_PARAMETER |                                  Marks that parameter is deserialized JSON content from request                                   |
+| @RequestParam     | VALUE_PARAMETER |                                   Marks that parameter is a value of request's query parameter                                    |
+
+#### Annotation parameters
+
+__@ExceptionHandler__
+- values (Array<KClass<out Throwable>>) - exceptions, should be handled in method
+- produces (MimeType) - response type, returned to client
+
+__@MultipartFile__
+- acceptExtensions (Array<String>) - set of extensions, acceptable for handler
+
+__@MultipartObject__
+- acceptExtensions (Array<String>) - set of extensions, acceptable for handler
+
+__@PathVariable__
+- value (String) - name of path variable
+
+__@PreAuthorize__
+- value (String) - string representation of method, which should be invoked
+
+__@RequestMapping__
+- value (Array<String>) - paths, which handler able to process
+- produces (MimeType) - response type, returned to client
+- method (HttpMethod) - http method, which handler able to process
+
+__@RequestParam__
+- value (String) - name of query parameter
+
+__@ResponseStatus__
+- value (HttpStatus) - http response status, which should be sent to client
+
+#### Specific values
+
+__HttpStatus__
+- OK
+- FOUND
+- NOT_FOUND
+- BAD_REQUEST
+- METHOD_NOT_ALLOWED
+- INTERNAL_SERVER_ERROR
+- FORBIDDEN
+- UNAUTHORIZED
+- CONFLICT
+- MOVED_PERMANENTLY
+- UNPROCESSABLE_ENTITY
+
+__MimeType__
+- TEXT_PLAIN
+- APPLICATION_JSON
+- APPLICATION_OCTET_STREAM
+- BYTES
+- TEXT_HTML
+- TEXT_CSS
+- TEXT_JAVASCRIPT
+- IMAGE_GIF
+- IMAGE_PNG
+- IMAGE_JPEG
+- IMAGE_SVG
+- IMAGE_ICO
+- FONT_TTF
+- FONT_WOFF2
+
+__HttpMethod__
+- GET
+- POST
+- PUT
+- DELETE
+- TRACE
+- OPTIONS
+- HEAD
+
+### Example controller
+
+Here is a sample controller, how it looks like
+
+```kotlin
+@Controller // 1
+@PreAuthorize("hasRole('ADMIN')") // 2
+@RequestMapping(value = ["/api/users"]) //3
+class UserController(
+    private val service: UserService
+) {
+
+    @RequestMapping(value = ["/all"], method = GET) // 4
+    fun getAll(searchRequest: UserSearchRequest, @Valid pageRequest: UserPageRequest): PageResponse<UserDto> { // 5
+        val page = service.getAll(searchRequest, pageRequest).map { UserDto(it) }
+        return PageResponse(page)
+    }
+
+    @PreAuthorize("isAuthenticated()") // 6
+    @RequestMapping(value = ["/current"])
+    fun getCurrentUser(@Principal user: User): UserDto { // 7
+        return UserDto(user)
+    }
+
+    @RequestMapping(value = ["/{id}/doEnable"])
+    fun enableUser(@PathVariable userId: Long) { // 8
+        service.setUserEnabled(userId, true)
+    }
+
+    @RequestMapping(method = POST)
+    fun add(@RequestBody @Valid request: UserRequest): UserDto { // 9
+        return UserDto(service.add(request))
+    }
+
+}
+```
+
+1) To declare controller add @Controller annotation from `io.zensoft.web.annotation` package 
+2) Common PreAuthorize method, used for all handlers in controller
+3) Common request mapping. Each handler's path will start with this prefix
+4) Request mapping for specific method, path appended to the common mapping, so path to handler will be `/api/users/all`
+5) @Valid annotation from validation API is compatible with request parameters
+6) Specific PreAuthorized method, common one, specified on controller, will be ignored
+7) User information is available in this handler
+8) userId is taken from request path
+9) request field will be deserialized request JSON content
+
+
 ## Performance Comparison
 
 ### Environment
 
-KVM, Ubuntu 16.04, 2048 MB RAM, 2 CPU
+KVM, Ubuntu 18.04, 16384 MB RAM, 4 CPU
 
-Run: `$ java -Xmx1024M -server -jar application.jar`
+Run: `$ java -Xmx512M -server -jar application.jar`
 
 Test: `$ wrk -t12 -c400 -d30s --latency http://host/api/user/current`
 
 ### Tomcat
 
 ```
-Running 30s test @ http://host/api/user/current
+Running 30s test @ http://localhost:8080/api/user
   12 threads and 400 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency    54.66ms   64.39ms 996.17ms   92.02%
-    Req/Sec   744.51    140.25     3.08k    85.77%
+    Latency    28.38ms   60.69ms   1.13s    91.46%
+    Req/Sec     3.77k     1.01k    8.55k    75.77%
   Latency Distribution
-     50%   42.26ms
-     75%   65.72ms
-     90%  105.89ms
-     99%  275.51ms
-  265240 requests in 30.06s, 53.93MB read
-Requests/sec:   8822.80
-Transfer/sec:      1.79MB
-```
-
-
-### Undertow
-
-```
-Running 30s test @ http://host/api/user/current
-  12 threads and 400 connections
-  Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency    66.80ms  121.30ms   1.94s    91.37%
-    Req/Sec     0.87k   327.28     6.07k    91.60%
-  Latency Distribution
-     50%   27.18ms
-     75%   77.43ms
-     90%  172.98ms
-     99%  505.67ms
-  303177 requests in 30.04s, 51.47MB read
-  Socket errors: connect 0, read 0, write 0, timeout 148
-Requests/sec:  10090.98
-Transfer/sec:      1.71MB
+     50%    8.44ms
+     75%   25.17ms
+     90%   76.97ms
+     99%  312.14ms
+  1348558 requests in 30.10s, 272.89MB read
+Requests/sec:  44806.23
+Transfer/sec:      9.07MB
 ```
 
 ### Spring Reactive - Webflux
 
 ```
-Running 30s test @ http://192.168.88.104:8080/api/user/current
+Running 30s test @ http://localhost:8080/api/user
   12 threads and 400 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency    64.22ms  101.43ms   2.00s    89.74%
-    Req/Sec     0.88k   332.80     7.93k    93.13%
+    Latency     7.41ms    4.38ms 228.41ms   87.16%
+    Req/Sec     4.70k   568.07     7.00k    86.56%
   Latency Distribution
-     50%   27.41ms
-     75%   77.47ms
-     90%  168.43ms
-     99%  432.62ms
-  306800 requests in 30.10s, 52.08MB read
-  Socket errors: connect 0, read 0, write 0, timeout 36
-Requests/sec:  10193.27
-Transfer/sec:      1.73MB
-```
-
-### Ktor
-```
-Running 30s test @ http://192.168.88.104:8080/api/user/current
-  12 threads and 400 connections
-  Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency    38.04ms   26.10ms 287.62ms   81.12%
-    Req/Sec     0.93k   167.77     7.45k    89.80%
-  Latency Distribution
-     50%   25.94ms
-     75%   48.67ms
-     90%   78.13ms
-     99%  109.79ms
-  333816 requests in 30.10s, 80.22MB read
-Requests/sec:  11090.80
-Transfer/sec:      2.67MB
+     50%    5.52ms
+     75%    8.11ms
+     90%   13.07ms
+     99%   24.71ms
+  1684671 requests in 30.06s, 253.85MB read
+Requests/sec:  56051.02
+Transfer/sec:      8.45MB
 ```
 
 ### This
 
 ```
-Running 30s test @ http://192.168.88.104:8080/api/user/current
+Running 30s test @ http://localhost:8080/api/user
   12 threads and 400 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency    25.38ms   41.24ms 460.39ms   90.51%
-    Req/Sec     2.38k   325.27     4.46k    88.33%
+    Latency    45.78ms  120.34ms 637.34ms   90.29%
+    Req/Sec     7.09k     3.08k   19.56k    69.34%
   Latency Distribution
-     50%   12.09ms
-     75%   18.72ms
-     90%   63.93ms
-     99%  215.51ms
-  845952 requests in 30.05s, 129.08MB read
-Requests/sec:  28151.60
-Transfer/sec:      4.30MB
+     50%    3.80ms
+     75%   11.65ms
+     90%  153.72ms
+     99%  562.01ms
+  2173245 requests in 30.05s, 493.27MB read
+Requests/sec:  72312.37
+Transfer/sec:     16.41MB
 ```
 
-### Overview
+### This (stateless)
 
-![Diagram](docs/performance-diagram.png)
-
-So, this stack in 2.8 times faster than Undertow and Webflux and in 3.18 times faster than Tomcat.
-
-The difference in rates becomes higher with more performance hardware.
+```
+Running 30s test @ http://localhost:8080/api/user
+  12 threads and 400 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     2.03ms    1.93ms  37.00ms   87.60%
+    Req/Sec    19.09k     5.14k   63.30k    69.77%
+  Latency Distribution
+     50%    1.36ms
+     75%    2.47ms
+     90%    4.15ms
+     99%    9.83ms
+  6852119 requests in 30.10s, 1.01GB read
+Requests/sec: 227648.43
+Transfer/sec:     34.52MB
+```

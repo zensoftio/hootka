@@ -9,7 +9,7 @@ import org.springframework.validation.annotation.Validated
 @Component
 class WebConfig(
     var session: SessionConfig = SessionConfig(),
-    var security: SecurityConfig? = SecurityConfig()
+    var security: SecurityConfig = SecurityConfig()
 )
 
 class SessionConfig(

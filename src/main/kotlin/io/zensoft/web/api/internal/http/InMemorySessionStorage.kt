@@ -7,6 +7,7 @@ import io.zensoft.web.api.SessionStorage
 import io.zensoft.web.api.WrappedHttpRequest
 import io.zensoft.web.api.WrappedHttpResponse
 import io.zensoft.web.api.properties.WebConfig
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -16,6 +17,8 @@ import javax.annotation.PostConstruct
 class InMemorySessionStorage(
     private val webConfig: WebConfig
 ) : SessionStorage {
+
+    private val sessionCookieName: String = webConfig.session.cookieName
 
     private lateinit var storage: Cache<String, HttpSession>
 
@@ -32,17 +35,17 @@ class InMemorySessionStorage(
 
     override fun createAndAssignSession(response: WrappedHttpResponse): HttpSession {
         val session = this.createSession()
-        response.setCookie(webConfig.session.cookieName, session.getId(), true, null)
+        response.setCookie(sessionCookieName, session.getId(), true, null)
         return session
     }
 
     override fun resolveSession(request: WrappedHttpRequest): HttpSession? {
-        val cookie = request.getCookies()[webConfig.session.cookieName]
+        val cookie = request.getCookies()[sessionCookieName]
         return cookie?.let { findSession(it) }
     }
 
     override fun removeSession(request: WrappedHttpRequest) {
-        val cookie = request.getCookies()[webConfig.session.cookieName]
+        val cookie = request.getCookies()[sessionCookieName]
         cookie?.let { storage.invalidate(it) }
     }
 

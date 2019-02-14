@@ -2,7 +2,6 @@ package io.zensoft.web.api.internal.provider
 
 import io.zensoft.web.api.HttpRequestMapper
 import io.zensoft.web.api.ValidationProvider
-import io.zensoft.web.api.WrappedHttpRequest
 import io.zensoft.web.api.exceptions.HandlerParameterInstantiationException
 import io.zensoft.web.api.internal.support.HandlerMethodParameter
 import io.zensoft.web.api.internal.support.HttpHandlerMetaInfo
