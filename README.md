@@ -226,6 +226,8 @@ class UserController(
 
 ## Performance Comparison
 
+![Chart](docs/performance-chart.png)
+
 ### Environment
 
 KVM, Ubuntu 18.04, 16384 MB RAM, 4 CPU
