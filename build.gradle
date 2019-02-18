@@ -52,6 +52,11 @@ subprojects {
         compile("javax.el:javax.el-api:3.0.0")
         compile("org.glassfish:javax.el:3.0.0")
         compile("org.hibernate.validator:hibernate-validator:6.0.1.Final")
+
+        //DB
+        compile('org.flywaydb:flyway-core')
+        compile('com.h2database:h2')
+        compile("org.springframework:spring-jdbc")
     }
 
     // Jar

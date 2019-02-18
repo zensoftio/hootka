@@ -6,8 +6,6 @@ import io.zensoft.web.api.HttpSession
 import io.zensoft.web.api.SessionStorage
 import io.zensoft.web.api.WrappedHttpRequest
 import io.zensoft.web.api.WrappedHttpResponse
-import io.zensoft.web.api.properties.WebConfig
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.util.*
 import java.util.concurrent.TimeUnit
