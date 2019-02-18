@@ -1,9 +1,4 @@
-# Hootka
-
-# Description
-
-The repository is a **high**-performance tech stack based on [Spring Boot](https://projects.spring.io/spring-boot/) 
-that using [Netty](https://netty.io/) instead of Spring Web MVC / Spring Webflux.
+![Logo](docs/logo.png)
 
 
 ## Installation
