@@ -1,6 +1,8 @@
 package io.zensoft.web.api
 
-interface HttpSession {
+import java.io.Serializable
+
+interface HttpSession : Serializable {
 
     fun getId(): String
 
