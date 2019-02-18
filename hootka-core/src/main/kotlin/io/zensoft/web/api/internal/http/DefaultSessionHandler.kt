@@ -8,14 +8,12 @@ import org.springframework.stereotype.Component
 @Component
 class DefaultSessionHandler(
     private val sessionStorage: SessionStorage,
-    webConfig: WebConfig
+    private val cookieName: String
 ) : SessionHandler {
-
-    private val sessionCookieName: String = webConfig.session.cookieName
 
     override fun getOrCreateSession(request: WrappedHttpRequest, response: WrappedHttpResponse): HttpSession {
         val cookies = request.getCookies()
-        val sessionId = cookies[sessionCookieName]
+        val sessionId = cookies[cookieName]
         var session = sessionId
             ?.let { sessionStorage.findSession(sessionId) }
         if (session == null) {

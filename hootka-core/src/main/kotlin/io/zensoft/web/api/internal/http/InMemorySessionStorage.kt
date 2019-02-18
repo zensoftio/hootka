@@ -15,10 +15,9 @@ import javax.annotation.PostConstruct
 
 @Component
 class InMemorySessionStorage(
-    private val webConfig: WebConfig
+    private val cookieName: String,
+    private val cookieExpiry: Long
 ) : SessionStorage {
-
-    private val sessionCookieName: String = webConfig.session.cookieName
 
     private lateinit var storage: Cache<String, HttpSession>
 
@@ -35,24 +34,24 @@ class InMemorySessionStorage(
 
     override fun createAndAssignSession(response: WrappedHttpResponse): HttpSession {
         val session = this.createSession()
-        response.setCookie(sessionCookieName, session.getId(), true, null)
+        response.setCookie(cookieName, session.getId(), true, null)
         return session
     }
 
     override fun resolveSession(request: WrappedHttpRequest): HttpSession? {
-        val cookie = request.getCookies()[sessionCookieName]
+        val cookie = request.getCookies()[cookieName]
         return cookie?.let { findSession(it) }
     }
 
     override fun removeSession(request: WrappedHttpRequest) {
-        val cookie = request.getCookies()[sessionCookieName]
+        val cookie = request.getCookies()[cookieName]
         cookie?.let { storage.invalidate(it) }
     }
 
     @PostConstruct
     private fun init() {
         storage = Caffeine.newBuilder()
-            .expireAfterAccess(webConfig.session.cookieMaxAge, TimeUnit.SECONDS)
+            .expireAfterAccess(cookieExpiry, TimeUnit.SECONDS)
             .build<String, HttpSession>()
     }
 

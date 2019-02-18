@@ -1,1 +1,5 @@
-rootProject.name='spring-boot-netty'
+rootProject.name = 'hootka'
+
+include('hootka-autoconfigure')
+include('hootka-core')
+include('hootka-starter')

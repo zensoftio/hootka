@@ -17,7 +17,7 @@ import javax.annotation.PreDestroy
 
 @Component
 class HttpServer(
-    @Value("\${server.port:8080}") port: Int,
+    port: Int,
     private val httpChannelInitializer: HttpChannelInitializer
 ) : CommandLineRunner {
 
