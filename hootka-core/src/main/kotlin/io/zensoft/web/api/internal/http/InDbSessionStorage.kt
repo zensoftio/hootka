@@ -6,13 +6,16 @@ import io.zensoft.web.api.WrappedHttpRequest
 import io.zensoft.web.api.WrappedHttpResponse
 import io.zensoft.web.util.SerializationUtils.deserialize
 import io.zensoft.web.util.SerializationUtils.serialize
-import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Component
+import java.sql.PreparedStatement
 import java.util.*
+import javax.annotation.PostConstruct
+import javax.sql.DataSource
+
 
 @Component
 class InDbSessionStorage(
-    private val jdbcTemplate: JdbcTemplate,
+    private val dataSource: DataSource,
     private val cookieName: String
 ) : SessionStorage {
 
@@ -20,17 +23,30 @@ class InDbSessionStorage(
         const val INSERT_QUERY = "INSERT INTO session_storage(id,session) VALUES (? , ?)"
         const val SELECT_QUERY = "SELECT session FROM session_storage WHERE id = ?"
         const val DELETE_QUERY = "DELETE FROM session_storage WHERE id = ?"
+        const val CREATE_SESSION_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS session_storage" +
+            "(" +
+            "  id      VARCHAR PRIMARY KEY HASH," +
+            "  session VARCHAR NOT NULL" +
+            ");"
     }
 
     override fun findSession(id: String): HttpSession? {
-        val result: String = jdbcTemplate.queryForObject(SELECT_QUERY, arrayOf<Any>(id), String::class.java)
-        return deserialize(result.toByteArray()) as HttpSession
+        val st = getPreparedStatement(SELECT_QUERY)
+        st.setString(1, id)
+        val result = st.executeQuery()
+
+        return deserialize(result.getString("session").toByteArray()) as HttpSession
     }
 
     override fun createSession(): HttpSession {
         val sessionId = UUID.randomUUID().toString()
         val session = DefaultHttpSession(sessionId)
-        jdbcTemplate.update(INSERT_QUERY, sessionId, serialize(session))
+
+        val st = getPreparedStatement(INSERT_QUERY)
+        st.setString(1, sessionId)
+        st.setString(2, String(serialize(session)))
+        st.executeUpdate()
+
         return session
     }
 
@@ -47,6 +63,23 @@ class InDbSessionStorage(
 
     override fun removeSession(request: WrappedHttpRequest) {
         val cookie = request.getCookies()[cookieName]
-        cookie?.let { jdbcTemplate.update(DELETE_QUERY, it) }
+        cookie?.let {
+            val st = getPreparedStatement(DELETE_QUERY)
+            st.setString(1, it)
+            st.executeUpdate()
+        }
     }
+
+    fun getPreparedStatement(query: String): PreparedStatement {
+        val conn = dataSource.connection
+        return conn.prepareStatement(query)
+    }
+
+    @PostConstruct
+    private fun init() {
+        val st = getPreparedStatement(CREATE_SESSION_TABLE_QUERY)
+        st.executeUpdate()
+        st.close()
+    }
+
 }
