@@ -7,16 +7,13 @@ import io.zensoft.web.api.internal.utils.ResourceMimeTypeUtils
 import io.zensoft.web.api.model.HttpMethod
 import io.zensoft.web.api.model.HttpStatus
 import org.apache.commons.io.IOUtils
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.ApplicationContext
-import org.springframework.stereotype.Component
 import org.springframework.util.AntPathMatcher
 import javax.annotation.PostConstruct
 
-@Component
 class StaticResourcesProvider(
     private val applicationContext: ApplicationContext,
-    @Value("\${app.static.cache.max-age:28800}") private val resourceMaxAge: Long
+    private val resourceMaxAge: Long
 ) {
 
     companion object {

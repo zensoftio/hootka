@@ -17,22 +17,17 @@ import io.zensoft.web.api.internal.utils.DeserializationUtils
 import io.zensoft.web.api.model.HttpStatus
 import io.zensoft.web.api.model.MimeType
 import org.apache.commons.lang3.StringUtils
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
 import java.lang.reflect.InvocationTargetException
 
-@Component
 class BaseRequestProcessor(
     private val pathHandlerProvider: MethodHandlerProvider,
     private val exceptionHandlerProvider: ExceptionHandlerProvider,
     private val sessionHandler: SessionHandler,
     private val handlerParameterProvider: HandlerParameterMapperProvider,
     private val responseResolverProvider: ResponseResolverProvider,
-    private val staticResourcesProvider: StaticResourcesProvider
-) {
-
-    @Autowired(required = false)
+    private val staticResourcesProvider: StaticResourcesProvider,
     private val preconditionsProvider: SecurityExpressionExecutor? = null
+) {
 
     companion object {
         private const val REDIRECT_PREFIX = "redirect:"

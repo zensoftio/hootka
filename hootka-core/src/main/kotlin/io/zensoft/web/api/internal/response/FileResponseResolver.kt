@@ -5,11 +5,9 @@ import io.zensoft.web.api.WrappedHttpResponse
 import io.zensoft.web.api.model.InMemoryFile
 import io.zensoft.web.api.model.MimeType
 import org.apache.commons.io.IOUtils
-import org.springframework.stereotype.Component
 import java.io.File
 import java.io.FileInputStream
 
-@Component
 class FileResponseResolver : HttpResponseResolver {
 
     override fun supportsContentType(contentType: MimeType): Boolean {

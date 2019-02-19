@@ -9,13 +9,11 @@ import io.zensoft.web.api.internal.support.HttpHandlerMetaInfo
 import io.zensoft.web.api.internal.support.RequestContext
 import io.zensoft.web.api.internal.utils.DeserializationUtils
 import io.zensoft.web.api.model.HttpMethod
-import org.springframework.stereotype.Component
 import java.nio.charset.Charset
 import javax.validation.Valid
 import kotlin.reflect.KParameter
 import kotlin.reflect.jvm.javaType
 
-@Component
 class ModelAttributeMapper : HttpRequestMapper {
 
     override fun supportsAnnotation(annotations: List<Annotation>): Boolean {

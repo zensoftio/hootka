@@ -5,18 +5,15 @@ import io.netty.handler.codec.http.HttpHeaderValues
 import io.netty.handler.codec.http.QueryStringDecoder
 import io.zensoft.web.annotation.RequestParam
 import io.zensoft.web.api.HttpRequestMapper
-import io.zensoft.web.api.WrappedHttpRequest
 import io.zensoft.web.api.internal.support.HandlerMethodParameter
 import io.zensoft.web.api.internal.support.HttpHandlerMetaInfo
 import io.zensoft.web.api.internal.support.RequestContext
 import io.zensoft.web.api.internal.utils.NumberUtils
 import io.zensoft.web.api.model.HttpMethod
-import org.springframework.stereotype.Component
 import java.nio.charset.Charset
 import kotlin.reflect.KParameter
 import kotlin.reflect.jvm.javaType
 
-@Component
 class RequestParameterMapper : HttpRequestMapper {
 
     private val charset = Charset.forName("UTF-8")

@@ -9,13 +9,11 @@ import io.zensoft.web.api.model.HttpMethod
 import io.zensoft.web.api.model.HttpStatus
 import io.zensoft.web.api.model.MimeType
 import org.springframework.context.ApplicationContext
-import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
 import kotlin.reflect.KClass
 import kotlin.reflect.full.declaredFunctions
 import kotlin.reflect.full.findAnnotation
 
-@Component
 class ExceptionHandlerProvider(
     private val context: ApplicationContext,
     private val handlerParameterMapperProvider: HandlerParameterMapperProvider

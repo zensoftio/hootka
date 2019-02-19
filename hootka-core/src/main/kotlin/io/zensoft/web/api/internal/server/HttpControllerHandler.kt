@@ -13,11 +13,9 @@ import io.zensoft.web.api.internal.http.NettyWrappedHttpResponse
 import io.zensoft.web.api.model.HttpStatus
 import io.zensoft.web.api.model.MimeType
 import org.slf4j.LoggerFactory
-import org.springframework.stereotype.Component
 import java.net.InetSocketAddress
 
 @ChannelHandler.Sharable
-@Component
 class HttpControllerHandler(
     private val requestProcessor: BaseRequestProcessor
 ) : SimpleChannelInboundHandler<FullHttpRequest>() {

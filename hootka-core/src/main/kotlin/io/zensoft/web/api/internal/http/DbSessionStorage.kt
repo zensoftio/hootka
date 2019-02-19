@@ -14,7 +14,7 @@ import javax.sql.DataSource
 
 
 @Component
-class InDbSessionStorage(
+class DbSessionStorage(
     private val dataSource: DataSource,
     private val cookieName: String
 ) : SessionStorage {
