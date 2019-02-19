@@ -92,7 +92,6 @@ class ServerWebConfiguration(
     // Request Processor
 
     @Bean
-    @ConditionalOnBean(BaseRequestProcessor::class)
     @ConditionalOnMissingBean(BaseRequestProcessor::class)
     fun requestProcessor(): BaseRequestProcessor
         = BaseRequestProcessor(
