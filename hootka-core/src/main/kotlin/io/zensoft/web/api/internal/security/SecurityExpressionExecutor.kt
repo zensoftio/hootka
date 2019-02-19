@@ -5,15 +5,11 @@ import io.zensoft.web.api.SecurityProvider
 import io.zensoft.web.api.exceptions.PreconditionNotSatisfiedException
 import io.zensoft.web.api.internal.support.RequestContext
 import io.zensoft.web.api.model.SimpleAuthenticationDetails
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
-import org.springframework.stereotype.Component
 import javax.el.ELContext
 import javax.el.ELException
 import javax.el.ExpressionFactory
 import javax.el.StandardELContext
 
-@Component
-@ConditionalOnBean(SecurityProvider::class)
 class SecurityExpressionExecutor(
     private val securityProvider: SecurityProvider<SimpleAuthenticationDetails>,
     private val securityExpressionInitializer: SecurityExpressionInitializer

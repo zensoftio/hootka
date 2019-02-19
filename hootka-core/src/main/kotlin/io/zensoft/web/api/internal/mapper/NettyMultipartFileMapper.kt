@@ -11,11 +11,9 @@ import io.zensoft.web.api.internal.support.HandlerMethodParameter
 import io.zensoft.web.api.internal.support.HttpHandlerMetaInfo
 import io.zensoft.web.api.internal.support.RequestContext
 import io.zensoft.web.api.model.InMemoryFile
-import org.springframework.stereotype.Component
 import kotlin.reflect.KParameter
 import kotlin.reflect.jvm.javaType
 
-@Component
 class NettyMultipartFileMapper : HttpRequestMapper {
 
     override fun supportsAnnotation(annotations: List<Annotation>): Boolean {

@@ -8,7 +8,6 @@ import io.zensoft.web.api.model.HttpMethod
 import io.zensoft.web.api.model.HttpStatus
 import org.apache.commons.lang3.StringUtils
 import org.springframework.context.ApplicationContext
-import org.springframework.stereotype.Component
 import org.springframework.util.AntPathMatcher
 import java.util.*
 import javax.annotation.PostConstruct
@@ -17,7 +16,6 @@ import kotlin.reflect.KFunction
 import kotlin.reflect.full.declaredFunctions
 import kotlin.reflect.full.findAnnotation
 
-@Component
 class MethodHandlerProvider(
     private val context: ApplicationContext,
     private val handlerParameterMapperProvider: HandlerParameterMapperProvider

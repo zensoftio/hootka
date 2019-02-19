@@ -5,10 +5,8 @@ import io.zensoft.web.api.HttpResponseResolver
 import io.zensoft.web.api.WrappedHttpResponse
 import io.zensoft.web.api.model.MimeType
 import io.zensoft.web.api.model.ViewModel
-import org.springframework.stereotype.Component
 import java.io.StringWriter
 
-@Component
 class FreemarkerResponseResolver(
     private var freemarkerConfig: Configuration
 ) : HttpResponseResolver {

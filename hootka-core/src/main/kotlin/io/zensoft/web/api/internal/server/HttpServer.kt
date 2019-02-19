@@ -9,13 +9,10 @@ import io.netty.channel.epoll.EpollServerSocketChannel
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.CommandLineRunner
-import org.springframework.stereotype.Component
 import java.util.*
 import javax.annotation.PreDestroy
 
-@Component
 class HttpServer(
     port: Int,
     private val httpChannelInitializer: HttpChannelInitializer
@@ -25,9 +22,9 @@ class HttpServer(
         private val log = LoggerFactory.getLogger(HttpServer::class.java)
     }
 
-    private lateinit var bossGroup: EventLoopGroup
-    private lateinit var workerGroup: EventLoopGroup
-    private lateinit var socketChannelClass: Class<out ServerChannel>
+    private var bossGroup: EventLoopGroup
+    private var workerGroup: EventLoopGroup
+    private var socketChannelClass: Class<out ServerChannel>
     private val port: Int
 
     init {

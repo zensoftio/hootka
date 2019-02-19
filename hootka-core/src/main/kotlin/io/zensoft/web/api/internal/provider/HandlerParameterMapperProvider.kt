@@ -7,14 +7,12 @@ import io.zensoft.web.api.internal.support.HandlerMethodParameter
 import io.zensoft.web.api.internal.support.HttpHandlerMetaInfo
 import io.zensoft.web.api.internal.support.RequestContext
 import org.springframework.context.ApplicationContext
-import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
 import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
 import kotlin.reflect.full.valueParameters
 import kotlin.reflect.jvm.javaType
 
-@Component
 class HandlerParameterMapperProvider(
     private val context: ApplicationContext,
     private val validationService: ValidationProvider

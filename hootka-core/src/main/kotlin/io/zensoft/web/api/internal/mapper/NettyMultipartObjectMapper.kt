@@ -13,14 +13,12 @@ import io.zensoft.web.api.internal.support.HttpHandlerMetaInfo
 import io.zensoft.web.api.internal.support.RequestContext
 import io.zensoft.web.api.internal.utils.NumberUtils
 import io.zensoft.web.api.model.InMemoryFile
-import org.springframework.stereotype.Component
 import javax.validation.Valid
 import kotlin.reflect.KParameter
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.javaConstructor
 import kotlin.reflect.jvm.javaType
 
-@Component
 class NettyMultipartObjectMapper : HttpRequestMapper {
 
     override fun supportsAnnotation(annotations: List<Annotation>): Boolean {

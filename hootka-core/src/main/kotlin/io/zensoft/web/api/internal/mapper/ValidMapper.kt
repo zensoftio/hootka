@@ -1,17 +1,14 @@
 package io.zensoft.web.api.internal.mapper
 
 import io.zensoft.web.api.HttpRequestMapper
-import io.zensoft.web.api.WrappedHttpRequest
 import io.zensoft.web.api.internal.support.HandlerMethodParameter
 import io.zensoft.web.api.internal.support.HttpHandlerMetaInfo
 import io.zensoft.web.api.internal.support.RequestContext
 import io.zensoft.web.api.internal.utils.DeserializationUtils
-import org.springframework.stereotype.Component
 import javax.validation.Valid
 import kotlin.reflect.KParameter
 import kotlin.reflect.jvm.javaType
 
-@Component
 class ValidMapper : HttpRequestMapper {
 
     override fun supportsAnnotation(annotations: List<Annotation>): Boolean {

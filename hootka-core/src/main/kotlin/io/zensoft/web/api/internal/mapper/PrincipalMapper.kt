@@ -3,17 +3,12 @@ package io.zensoft.web.api.internal.mapper
 import io.zensoft.web.annotation.Principal
 import io.zensoft.web.api.HttpRequestMapper
 import io.zensoft.web.api.SecurityProvider
-import io.zensoft.web.api.internal.security.DefaultSecurityProvider
 import io.zensoft.web.api.internal.support.HandlerMethodParameter
 import io.zensoft.web.api.internal.support.HttpHandlerMetaInfo
 import io.zensoft.web.api.internal.support.RequestContext
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
-import org.springframework.stereotype.Component
 import kotlin.reflect.KParameter
 import kotlin.reflect.jvm.javaType
 
-@Component
-@ConditionalOnBean(SecurityProvider::class)
 class PrincipalMapper(
     private val securityProvider: SecurityProvider<*>
 ) : HttpRequestMapper {

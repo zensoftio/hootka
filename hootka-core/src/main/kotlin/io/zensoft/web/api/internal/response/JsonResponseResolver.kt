@@ -4,9 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.zensoft.web.api.HttpResponseResolver
 import io.zensoft.web.api.WrappedHttpResponse
 import io.zensoft.web.api.model.MimeType
-import org.springframework.stereotype.Component
 
-@Component
 class JsonResponseResolver(
     private val jsonMapper: ObjectMapper
 ) : HttpResponseResolver {

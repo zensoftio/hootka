@@ -5,8 +5,7 @@ import com.fasterxml.jackson.module.kotlin.isKotlinClass
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl
 import java.lang.reflect.Field
-import kotlin.reflect.full.*
-import kotlin.reflect.jvm.javaType
+import kotlin.reflect.full.isSubclassOf
 
 object DeserializationUtils {
 
