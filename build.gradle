@@ -52,6 +52,9 @@ subprojects {
         compile("javax.el:javax.el-api:3.0.0")
         compile("org.glassfish:javax.el:3.0.0")
         compile("org.hibernate.validator:hibernate-validator:6.0.1.Final")
+
+        //Redis
+        compile("redis.clients:jedis:3.0.1")
     }
 
     // Jar
