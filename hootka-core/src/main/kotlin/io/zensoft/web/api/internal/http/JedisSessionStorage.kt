@@ -9,6 +9,7 @@ import io.zensoft.web.util.SerializationUtils.serialize
 import org.springframework.stereotype.Component
 import redis.clients.jedis.Jedis
 import java.util.*
+import javax.annotation.PostConstruct
 
 @Component
 class JedisSessionStorage(
@@ -16,7 +17,8 @@ class JedisSessionStorage(
     private val jedis: Jedis
 ) : SessionStorage {
 
-    override fun findSession(id: String): HttpSession? = deserialize(jedis.get(id).toByteArray()) as HttpSession
+    override fun findSession(id: String): HttpSession
+        = deserialize(jedis.get(id).toByteArray()) as HttpSession
 
     override fun createSession(): HttpSession {
         val sessionId = UUID.randomUUID().toString()
@@ -43,5 +45,9 @@ class JedisSessionStorage(
         }
     }
 
+    @PostConstruct
+    private fun init() {
+        jedis.auth("")
+    }
 
 }
