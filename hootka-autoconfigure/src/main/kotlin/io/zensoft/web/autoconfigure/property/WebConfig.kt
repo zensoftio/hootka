@@ -23,7 +23,7 @@ class SessionConfig(
 )
 
 class JedisConfig(
-    val jedis: Jedis = Jedis("localhost", 6379)
+    val jedis: Jedis = Jedis("192.168.88.38", 6379)
 )
 
 class SecurityConfig(

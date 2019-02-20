@@ -1,5 +1,6 @@
 package io.zensoft.web.api.internal.http
 
+import com.sun.org.apache.xerces.internal.impl.dv.util.HexBin
 import io.zensoft.web.api.HttpSession
 import io.zensoft.web.api.SessionStorage
 import io.zensoft.web.api.WrappedHttpRequest
@@ -9,7 +10,6 @@ import io.zensoft.web.util.SerializationUtils.serialize
 import org.springframework.stereotype.Component
 import redis.clients.jedis.Jedis
 import java.util.*
-import javax.annotation.PostConstruct
 
 @Component
 class JedisSessionStorage(
@@ -18,12 +18,12 @@ class JedisSessionStorage(
 ) : SessionStorage {
 
     override fun findSession(id: String): HttpSession
-        = deserialize(jedis.get(id).toByteArray()) as HttpSession
+        = deserialize(HexBin.decode(jedis.get(id))) as HttpSession
 
     override fun createSession(): HttpSession {
         val sessionId = UUID.randomUUID().toString()
         val session = DefaultHttpSession(sessionId)
-        jedis.set(sessionId, String(serialize(session)))
+        jedis.set(sessionId, HexBin.encode(serialize(session)))
         return session
     }
 
@@ -43,11 +43,6 @@ class JedisSessionStorage(
         cookie?.let {
             jedis.del(it)
         }
-    }
-
-    @PostConstruct
-    private fun init() {
-        jedis.auth("")
     }
 
 }
