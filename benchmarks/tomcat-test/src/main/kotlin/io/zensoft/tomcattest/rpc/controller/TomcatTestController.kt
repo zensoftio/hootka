@@ -10,6 +10,6 @@ import org.springframework.web.bind.annotation.RestController
 class TomcatTestController {
 
     @GetMapping
-    fun testWebflux(): UserDto = UserDto("Alice", "Johnson")
+    fun testTomcat(): UserDto = UserDto("Alice", "Johnson")
 
 }
