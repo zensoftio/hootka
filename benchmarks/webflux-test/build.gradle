@@ -16,6 +16,7 @@ repositories {
 
 dependencies {
     compile("org.springframework.boot:spring-boot-starter-webflux")
+    compile("org.springframework.boot:spring-boot-starter-security")
 
     compile("org.springframework.boot:spring-boot-starter")
     compile("org.jetbrains.kotlin:kotlin-reflect")
@@ -25,14 +26,12 @@ dependencies {
 
 compileKotlin {
     kotlinOptions {
-        freeCompilerArgs = ['-Xjsr305=strict']
         jvmTarget = '1.8'
     }
 }
 
 compileTestKotlin {
     kotlinOptions {
-        freeCompilerArgs = ['-Xjsr305=strict']
         jvmTarget = '1.8'
     }
 }
