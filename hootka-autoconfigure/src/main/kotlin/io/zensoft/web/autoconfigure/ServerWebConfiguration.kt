@@ -60,11 +60,13 @@ class ServerWebConfiguration(
 
     @Bean
     @ConditionalOnMissingBean(SessionStorage::class)
-    fun sessionStorage(): SessionStorage = InMemorySessionStorage(webConfig.session.cookieName, webConfig.session.cookieMaxAge)
+    fun sessionStorage(): SessionStorage
+        = InMemorySessionStorage(webConfig.session.cookieName, webConfig.session.cookieMaxAge)
 
     @Bean
     @ConditionalOnMissingBean(SessionHandler::class)
-    fun sessionHandler(): SessionHandler = DefaultSessionHandler(sessionStorage(), webConfig.session.cookieName)
+    fun sessionHandler(): SessionHandler
+        = DefaultSessionHandler(sessionStorage(), webConfig.session.cookieName)
 
     @Bean
     @ConditionalOnMissingBean(Jedis::class)
@@ -74,7 +76,8 @@ class ServerWebConfiguration(
 
     @Bean
     @ConditionalOnBean(UserDetailsService::class)
-    fun rememberMeService(): RememberMeService = DefaultRememberMeService(
+    fun rememberMeService(): RememberMeService
+        = DefaultRememberMeService(
         webConfig.security.rememberMeTokenName,
         webConfig.security.rememberMeTokenMaxAge,
         webConfig.security.rememberMeSalt,
@@ -83,11 +86,13 @@ class ServerWebConfiguration(
 
     @Bean
     @ConditionalOnBean(UserDetailsService::class)
-    fun securityProvider(): SecurityProvider<SimpleAuthenticationDetails> = DefaultSecurityProvider(sessionStorage(), applicationContext.getBean(UserDetailsService::class.java), rememberMeService())
+    fun securityProvider(): SecurityProvider<SimpleAuthenticationDetails>
+        = DefaultSecurityProvider(sessionStorage(), applicationContext.getBean(UserDetailsService::class.java), rememberMeService())
 
     @Bean
     @ConditionalOnBean(SecurityExpressionInitializer::class)
-    fun securityExpressionExecutor(): SecurityExpressionExecutor = SecurityExpressionExecutor(securityProvider(), applicationContext.getBean(SecurityExpressionInitializer::class.java))
+    fun securityExpressionExecutor(): SecurityExpressionExecutor
+        = SecurityExpressionExecutor(securityProvider(), applicationContext.getBean(SecurityExpressionInitializer::class.java))
 
     // Request Processor
 
@@ -168,7 +173,8 @@ class ServerWebConfiguration(
 
     @Bean
     @ConditionalOnMissingBean(StaticResourceHandler::class)
-    fun classpathResourceHandler(): StaticResourceHandler = ClasspathResourceHandler("/**", "static")
+    fun classpathResourceHandler(): StaticResourceHandler
+        = ClasspathResourceHandler("/**", "static")
 
     // Validation
 
@@ -180,7 +186,8 @@ class ServerWebConfiguration(
 
     @Bean
     @ConditionalOnMissingBean(StaticResourcesProvider::class)
-    fun staticResourcesProvider(): StaticResourcesProvider = StaticResourcesProvider(applicationContext, webConfig.static.cachedResourceExpiry)
+    fun staticResourcesProvider(): StaticResourcesProvider
+        = StaticResourcesProvider(applicationContext, webConfig.static.cachedResourceExpiry)
 
     @Bean
     @ConditionalOnMissingBean(ResponseResolverProvider::class)
@@ -188,13 +195,16 @@ class ServerWebConfiguration(
 
     @Bean
     @ConditionalOnMissingBean(HandlerParameterMapperProvider::class)
-    fun handlerParameterMapperProvider(): HandlerParameterMapperProvider = HandlerParameterMapperProvider(applicationContext, defaultValidationProvider())
+    fun handlerParameterMapperProvider(): HandlerParameterMapperProvider
+        = HandlerParameterMapperProvider(applicationContext, defaultValidationProvider())
 
     @Bean
     @ConditionalOnMissingBean(MethodHandlerProvider::class)
-    fun methodHandlerProvider(): MethodHandlerProvider = MethodHandlerProvider(applicationContext, handlerParameterMapperProvider())
+    fun methodHandlerProvider(): MethodHandlerProvider
+        = MethodHandlerProvider(applicationContext, handlerParameterMapperProvider())
 
     @Bean
     @ConditionalOnMissingBean(ExceptionHandlerProvider::class)
-    fun exceptionHandlerProvider(): ExceptionHandlerProvider = ExceptionHandlerProvider(applicationContext, handlerParameterMapperProvider())
+    fun exceptionHandlerProvider(): ExceptionHandlerProvider
+        = ExceptionHandlerProvider(applicationContext, handlerParameterMapperProvider())
 }
