@@ -29,6 +29,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import redis.clients.jedis.Jedis
 
 @Configuration
 @EnableConfigurationProperties(WebConfig::class)
@@ -66,6 +67,10 @@ class ServerWebConfiguration(
     @ConditionalOnMissingBean(SessionHandler::class)
     fun sessionHandler(): SessionHandler
         = DefaultSessionHandler(sessionStorage(), webConfig.session.cookieName)
+
+    @Bean
+    @ConditionalOnMissingBean(Jedis::class)
+    fun jedisClient(): Jedis = Jedis(webConfig.session.redis.host, webConfig.session.redis.port)
 
     // Security
 
