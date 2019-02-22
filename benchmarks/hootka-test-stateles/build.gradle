@@ -12,11 +12,11 @@ sourceCompatibility = '1.8'
 
 repositories {
     mavenCentral()
+    mavenLocal()
 }
 
 dependencies {
-    compile("org.springframework.boot:spring-boot-starter-web")
-    compile("org.springframework.boot:spring-boot-starter-security")
+    compile("io.zensoft.web:hootka-starter:0.1.0")
 
     compile("org.springframework.boot:spring-boot-starter")
     compile("org.jetbrains.kotlin:kotlin-reflect")

@@ -10,6 +10,7 @@ import io.zensoft.web.api.model.HttpMethod
 @RequestMapping(["/api/user"])
 class HootkaTestController {
 
+    @Stateless
     @RequestMapping(method = HttpMethod.GET)
     fun testWebflux(): UserDto = UserDto("Alice", "Johnson")
 

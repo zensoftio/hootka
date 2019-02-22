@@ -3,4 +3,4 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
-rootProject.name = 'tomcat-test'
+rootProject.name = 'hootka-test-stateless'

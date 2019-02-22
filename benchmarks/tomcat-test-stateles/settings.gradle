@@ -3,4 +3,4 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
-rootProject.name = 'tomcat-test'
+rootProject.name = 'tomcat-test-stateless'
