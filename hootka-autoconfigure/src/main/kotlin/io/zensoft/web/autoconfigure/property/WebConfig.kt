@@ -17,13 +17,7 @@ class WebConfig(
 
 class SessionConfig(
     var cookieName: String = "session_id",
-    var cookieMaxAge: Long = 1800,
-    val redis: JedisConfig = JedisConfig()
-)
-
-class JedisConfig(
-    var host: String = "localhost",
-    var port: Int = 6379
+    var cookieMaxAge: Long = 1800
 )
 
 class SecurityConfig(

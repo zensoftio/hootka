@@ -7,15 +7,16 @@ import io.zensoft.web.api.WrappedHttpRequest
 import io.zensoft.web.api.WrappedHttpResponse
 import io.zensoft.web.util.SerializationUtils.deserialize
 import io.zensoft.web.util.SerializationUtils.serialize
+import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Component
-import redis.clients.jedis.Jedis
 import java.util.*
+
 
 @Component
 class JedisSessionStorage(
     private val cookieName: String,
     private val cookieExpiry: Long,
-    private val jedis: Jedis
+    private val redisTemplate: StringRedisTemplate
 ) : SessionStorage {
 
     private var timestamp: Long = 0
@@ -23,10 +24,10 @@ class JedisSessionStorage(
 
     override fun findSession(id: String): HttpSession? {
         if (!isRelevant()) {
-            jedis.del(id)
+            redisTemplate.delete(id)
             return null
         }
-        return deserialize(HexBin.decode(jedis.get(id))) as HttpSession
+        return deserialize(HexBin.decode(redisTemplate.opsForValue().get(id))) as HttpSession
     }
 
     override fun createSession(): HttpSession {
@@ -34,7 +35,7 @@ class JedisSessionStorage(
         val session = DefaultHttpSession(sessionId)
         timestamp = System.currentTimeMillis()
 
-        jedis.set(sessionId, HexBin.encode(serialize(session)))
+        redisTemplate.opsForValue().set(sessionId, HexBin.encode(serialize(session)))
         return session
     }
 
@@ -52,7 +53,7 @@ class JedisSessionStorage(
     override fun removeSession(request: WrappedHttpRequest) {
         val cookie = request.getCookies()[cookieName]
         cookie?.let {
-            jedis.del(it)
+            redisTemplate.delete(it)
         }
     }
 
