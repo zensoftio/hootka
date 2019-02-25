@@ -10,6 +10,7 @@ import io.zensoft.web.util.SerializationUtils.serialize
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Component
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 
 @Component
@@ -19,23 +20,20 @@ class JedisSessionStorage(
     private val redisTemplate: StringRedisTemplate
 ) : SessionStorage {
 
-    private var timestamp: Long = 0
-
-
     override fun findSession(id: String): HttpSession? {
-        if (!isRelevant()) {
-            redisTemplate.delete(id)
-            return null
+        val session = redisTemplate.opsForValue().get(id)
+        if (session != null) {
+            redisTemplate.expire(id, cookieExpiry, TimeUnit.SECONDS)
+            return deserialize(HexBin.decode(session)) as HttpSession
         }
-        return deserialize(HexBin.decode(redisTemplate.opsForValue().get(id))) as HttpSession
+        return null
     }
 
     override fun createSession(): HttpSession {
         val sessionId = UUID.randomUUID().toString()
         val session = DefaultHttpSession(sessionId)
-        timestamp = System.currentTimeMillis()
 
-        redisTemplate.opsForValue().set(sessionId, HexBin.encode(serialize(session)))
+        redisTemplate.opsForValue().set(sessionId, HexBin.encode(serialize(session)), cookieExpiry, TimeUnit.SECONDS)
         return session
     }
 
@@ -56,7 +54,5 @@ class JedisSessionStorage(
             redisTemplate.delete(it)
         }
     }
-
-    private fun isRelevant(): Boolean = ((System.currentTimeMillis() - timestamp) / 1000) <= cookieExpiry
 
 }
