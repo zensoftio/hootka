@@ -1,1 +1,1 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=io.zensoft.web.autoconfigure.ServerWebConfiguration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=io.zensoft.hootka.autoconfigure.ServerWebConfiguration
