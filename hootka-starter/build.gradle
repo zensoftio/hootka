@@ -1,0 +1,4 @@
+dependencies {
+    compile project(':hootka-core')
+    compile project(':hootka-autoconfigure')
+}
