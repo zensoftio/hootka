@@ -85,7 +85,7 @@ class ServerWebConfiguration(
         = DefaultSecurityProvider(sessionStorage(), applicationContext.getBean(UserDetailsService::class.java), rememberMeService())
 
     @Bean
-    @ConditionalOnBean(SecurityExpressionInitializer::class)
+    @ConditionalOnBean(SecurityProvider::class, SecurityExpressionInitializer::class)
     fun securityExpressionExecutor(): SecurityExpressionExecutor
         = SecurityExpressionExecutor(securityProvider(), applicationContext.getBean(SecurityExpressionInitializer::class.java))
 

@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit
 
 
 @Component
-class JedisSessionStorage(
+class RedisSessionStorage(
     private val cookieName: String,
     private val cookieExpiry: Long,
     private val redisTemplate: StringRedisTemplate

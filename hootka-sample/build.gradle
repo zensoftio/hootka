@@ -10,5 +10,5 @@ repositories {
 }
 
 dependencies {
-    compile('io.zensoft.web:hootka-starter:0.1.0')
+    compile('io.zensoft.hootka:hootka-starter:0.1.0')
 }

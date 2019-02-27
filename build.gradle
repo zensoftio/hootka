@@ -5,7 +5,7 @@ plugins {
 }
 
 allprojects {
-    group = 'io.zensoft.web'
+    group = 'io.zensoft.hootka'
     version = '0.1.0'
 
     repositories {
