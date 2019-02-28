@@ -11,10 +11,13 @@ import io.zensoft.hootka.api.internal.utils.DeserializationUtils
 import io.zensoft.hootka.api.model.HttpMethod
 import java.nio.charset.Charset
 import javax.validation.Valid
+import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.jvm.javaType
 
 class ModelAttributeMapper : HttpRequestMapper {
+
+    override fun getSupportedAnnotation(): KClass<out Annotation> = ModelAttribute::class
 
     override fun supportsAnnotation(annotations: List<Annotation>): Boolean {
         return annotations.find { it is ModelAttribute } != null

@@ -14,12 +14,15 @@ import io.zensoft.hootka.api.internal.support.RequestContext
 import io.zensoft.hootka.api.internal.utils.NumberUtils
 import io.zensoft.hootka.api.model.InMemoryFile
 import javax.validation.Valid
+import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.javaConstructor
 import kotlin.reflect.jvm.javaType
 
 class NettyMultipartObjectMapper : HttpRequestMapper {
+
+    override fun getSupportedAnnotation(): KClass<out Annotation> = MultipartObject::class
 
     override fun supportsAnnotation(annotations: List<Annotation>): Boolean {
         return annotations.find { it is MultipartObject } != null

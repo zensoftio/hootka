@@ -13,7 +13,6 @@ import io.zensoft.hootka.api.model.ValidationError
 import org.slf4j.LoggerFactory
 import javax.validation.ConstraintViolationException
 
-@ControllerAdvice
 class DefaultExceptionControllerAdvice {
 
     companion object {

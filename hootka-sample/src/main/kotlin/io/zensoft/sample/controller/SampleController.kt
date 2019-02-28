@@ -15,7 +15,7 @@ class SampleController {
     }
 
     @Stateless
-    @RequestMapping(method = HttpMethod.GET, value = ["/api/greet"])
+    @RequestMapping(method = HttpMethod.GET, value = ["/api/greet"], produces = MimeType.TEXT_PLAIN)
     fun greet(@RequestParam name: String): String {
         return "Greetings, $name!!!"
     }

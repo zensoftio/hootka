@@ -11,10 +11,13 @@ import io.zensoft.hootka.api.internal.support.HandlerMethodParameter
 import io.zensoft.hootka.api.internal.support.HttpHandlerMetaInfo
 import io.zensoft.hootka.api.internal.support.RequestContext
 import io.zensoft.hootka.api.model.InMemoryFile
+import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.jvm.javaType
 
 class NettyMultipartFileMapper : HttpRequestMapper {
+
+    override fun getSupportedAnnotation(): KClass<out Annotation> = MultipartFile::class
 
     override fun supportsAnnotation(annotations: List<Annotation>): Boolean {
         return annotations.find { it is MultipartFile } != null

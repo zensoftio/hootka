@@ -3,9 +3,12 @@ package io.zensoft.hootka.api
 import io.zensoft.hootka.api.internal.support.HandlerMethodParameter
 import io.zensoft.hootka.api.internal.support.HttpHandlerMetaInfo
 import io.zensoft.hootka.api.internal.support.RequestContext
+import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 
 interface HttpRequestMapper {
+
+    fun getSupportedAnnotation(): KClass<out Annotation>
 
     fun supportsAnnotation(annotations: List<Annotation>): Boolean
 

@@ -7,12 +7,15 @@ import io.zensoft.hootka.api.internal.support.HttpHandlerMetaInfo
 import io.zensoft.hootka.api.internal.support.RequestContext
 import io.zensoft.hootka.api.internal.utils.NumberUtils
 import org.springframework.util.AntPathMatcher
+import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.jvm.javaType
 
 class PathVariableMapper : HttpRequestMapper {
 
     private val pathMatcher = AntPathMatcher()
+
+    override fun getSupportedAnnotation(): KClass<out Annotation> = PathVariable::class
 
     override fun supportsAnnotation(annotations: List<Annotation>): Boolean {
         return annotations.find { it is PathVariable } != null
