@@ -9,12 +9,16 @@ import io.zensoft.web.api.model.HttpStatus
 import org.apache.commons.lang3.StringUtils
 import org.springframework.context.ApplicationContext
 import org.springframework.util.AntPathMatcher
+import java.lang.invoke.MethodHandle
+import java.lang.invoke.MethodHandles
+import java.lang.invoke.MethodType
 import java.util.*
 import javax.annotation.PostConstruct
 import kotlin.Comparator
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.declaredFunctions
 import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.jvm.jvmErasure
 
 class MethodHandlerProvider(
     private val context: ApplicationContext,
@@ -58,6 +62,9 @@ class MethodHandlerProvider(
                 } else {
                     listOf(superPath)
                 }
+                val paramTypes = function.parameters.map { it.type.jvmErasure.java }.drop(1)
+                val methodType = MethodType.methodType(function.returnType.jvmErasure.java, paramTypes)
+                val methodHandle = MethodHandles.lookup().findVirtual(bean.javaClass, function.name, methodType)
                 for (path in paths) {
                     val key = HandlerMethodKey(path, pathAnnotation.method.toString())
                     if (storage.containsKey(key)) {
