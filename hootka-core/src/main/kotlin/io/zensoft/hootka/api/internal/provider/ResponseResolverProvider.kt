@@ -10,19 +10,18 @@ class ResponseResolverProvider(
     private val applicationContext: ApplicationContext
 ) {
 
-    private lateinit var responseResolvers: List<HttpResponseResolver>
+    private lateinit var responseResolvers: Map<MimeType, HttpResponseResolver>
 
     fun createResponseBody(result: Any, handlerArgs: Array<Any?>, mimeType: MimeType, response: WrappedHttpResponse): ByteArray {
         if (result === Unit) return ByteArray(0)
-        responseResolvers
-            .filter { it.supportsContentType(mimeType) }
-            .forEach { return it.resolveResponseBody(result, handlerArgs, response) }
-        throw IllegalArgumentException("Unsupported response content type $mimeType")
+        return responseResolvers[mimeType]?.resolveResponseBody(result, handlerArgs, response) ?:
+            throw IllegalArgumentException("Unsupported response content type $mimeType")
     }
 
     @PostConstruct
     private fun init() {
-        responseResolvers = applicationContext.getBeansOfType(HttpResponseResolver::class.java).values.toList()
+        responseResolvers = applicationContext.getBeansOfType(HttpResponseResolver::class.java)
+            .values.associate { it.getContentType() to it }
     }
 
 }

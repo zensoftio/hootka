@@ -14,6 +14,7 @@ import io.zensoft.hootka.api.internal.resource.ClasspathResourceHandler
 import io.zensoft.hootka.api.internal.response.FileResponseResolver
 import io.zensoft.hootka.api.internal.response.FreemarkerResponseResolver
 import io.zensoft.hootka.api.internal.response.JsonResponseResolver
+import io.zensoft.hootka.api.internal.response.PlainTextResponseResolver
 import io.zensoft.hootka.api.internal.security.DefaultRememberMeService
 import io.zensoft.hootka.api.internal.security.DefaultSecurityProvider
 import io.zensoft.hootka.api.internal.security.SecurityExpressionExecutor
@@ -163,6 +164,10 @@ class ServerWebConfiguration(
     @Bean
     @ConditionalOnMissingBean(JsonResponseResolver::class)
     fun jsonResponseResolver(): JsonResponseResolver = JsonResponseResolver(objectMapper())
+
+    @Bean
+    @ConditionalOnMissingBean(PlainTextResponseResolver::class)
+    fun plainTextResponseResolver(): PlainTextResponseResolver = PlainTextResponseResolver()
 
     // Static Resource Handlers
 

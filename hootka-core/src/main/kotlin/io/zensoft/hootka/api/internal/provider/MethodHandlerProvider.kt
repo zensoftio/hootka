@@ -9,7 +9,6 @@ import io.zensoft.hootka.api.model.HttpStatus
 import org.apache.commons.lang3.StringUtils
 import org.springframework.context.ApplicationContext
 import org.springframework.util.AntPathMatcher
-import java.lang.invoke.MethodHandle
 import java.lang.invoke.MethodHandles
 import java.lang.invoke.MethodType
 import java.util.*
@@ -70,7 +69,7 @@ class MethodHandlerProvider(
                     if (storage.containsKey(key)) {
                         throw IllegalStateException("Mapping $path is already exists.")
                     } else {
-                        storage[key] = HttpHandlerMetaInfo(bean, function, parameterMapping,
+                        storage[key] = HttpHandlerMetaInfo(bean, methodHandle, parameterMapping,
                             stateless, status, type, path, pathAnnotation.method, preconditionExpression)
                     }
                 }

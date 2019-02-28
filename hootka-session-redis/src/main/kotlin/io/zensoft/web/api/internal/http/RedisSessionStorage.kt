@@ -1,12 +1,13 @@
 package io.zensoft.web.api.internal.http
 
 import com.sun.org.apache.xerces.internal.impl.dv.util.HexBin
-import io.zensoft.web.api.HttpSession
-import io.zensoft.web.api.SessionStorage
-import io.zensoft.web.api.WrappedHttpRequest
-import io.zensoft.web.api.WrappedHttpResponse
-import io.zensoft.web.util.SerializationUtils.deserialize
-import io.zensoft.web.util.SerializationUtils.serialize
+import io.zensoft.hootka.api.HttpSession
+import io.zensoft.hootka.api.SessionStorage
+import io.zensoft.hootka.api.WrappedHttpRequest
+import io.zensoft.hootka.api.WrappedHttpResponse
+import io.zensoft.hootka.api.internal.http.DefaultHttpSession
+import io.zensoft.hootka.util.SerializationUtils.deserialize
+import io.zensoft.hootka.util.SerializationUtils.serialize
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Component
 import java.util.*

@@ -10,9 +10,7 @@ import java.io.FileInputStream
 
 class FileResponseResolver : HttpResponseResolver {
 
-    override fun supportsContentType(contentType: MimeType): Boolean {
-        return contentType == MimeType.APPLICATION_OCTET_STREAM
-    }
+    override fun getContentType(): MimeType = MimeType.APPLICATION_OCTET_STREAM
 
     override fun resolveResponseBody(result: Any, handlerArgs: Array<Any?>, response: WrappedHttpResponse): ByteArray {
         val output = when (result) {

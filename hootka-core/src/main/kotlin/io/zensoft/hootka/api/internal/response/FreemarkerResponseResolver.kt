@@ -11,7 +11,7 @@ class FreemarkerResponseResolver(
     private var freemarkerConfig: Configuration
 ) : HttpResponseResolver {
 
-    override fun supportsContentType(contentType: MimeType): Boolean = MimeType.TEXT_HTML == contentType
+    override fun getContentType(): MimeType = MimeType.TEXT_HTML
 
     override fun resolveResponseBody(result: Any, handlerArgs: Array<Any?>, response: WrappedHttpResponse): ByteArray {
         if (result !is String) throw IllegalArgumentException("String return type should be for html view response methods")

@@ -9,10 +9,13 @@ import io.zensoft.hootka.api.model.HttpMethod
 import io.zensoft.hootka.api.model.HttpStatus
 import io.zensoft.hootka.api.model.MimeType
 import org.springframework.context.ApplicationContext
+import java.lang.invoke.MethodHandles
+import java.lang.invoke.MethodType
 import javax.annotation.PostConstruct
 import kotlin.reflect.KClass
 import kotlin.reflect.full.declaredFunctions
 import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.jvm.jvmErasure
 
 class ExceptionHandlerProvider(
     private val context: ApplicationContext,
@@ -34,7 +37,10 @@ class ExceptionHandlerProvider(
                 val annotation = function.findAnnotation<ExceptionHandler>() ?: continue
                 val parameterMapping = handlerParameterMapperProvider.mapHandlerParameters(function)
                 val status = function.findAnnotation<ResponseStatus>()?.value ?: HttpStatus.OK
-                val handlerMetaInfo = HttpHandlerMetaInfo(advice, function, parameterMapping,
+                val paramTypes = function.parameters.map { it.type.jvmErasure.java }.drop(1)
+                val methodType = MethodType.methodType(function.returnType.jvmErasure.java, paramTypes)
+                val methodHandle = MethodHandles.lookup().findVirtual(advice.javaClass, function.name, methodType)
+                val handlerMetaInfo = HttpHandlerMetaInfo(advice, methodHandle, parameterMapping,
                     false, status, annotation.produces, "", HttpMethod.GET, null)
                 for (exceptionType in annotation.values) {
                     val key = ExceptionHandlerKey(exceptionType, annotation.produces.toString())

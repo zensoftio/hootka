@@ -1,9 +1,9 @@
 package io.zensoft.sample.exception
 
-import io.zensoft.web.annotation.ControllerAdvice
-import io.zensoft.web.annotation.ExceptionHandler
-import io.zensoft.web.annotation.ResponseStatus
-import io.zensoft.web.api.model.HttpStatus
+import io.zensoft.hootka.annotation.ControllerAdvice
+import io.zensoft.hootka.annotation.ExceptionHandler
+import io.zensoft.hootka.annotation.ResponseStatus
+import io.zensoft.hootka.api.model.HttpStatus
 
 @ControllerAdvice
 class WebExceptionHandler {

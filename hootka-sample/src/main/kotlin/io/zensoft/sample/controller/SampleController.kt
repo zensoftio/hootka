@@ -1,11 +1,18 @@
 package io.zensoft.sample.controller
 
 import io.zensoft.sample.domain.UserDto
-import io.zensoft.web.annotation.*
-import io.zensoft.web.api.model.HttpMethod
+import io.zensoft.hootka.annotation.*
+import io.zensoft.hootka.api.model.HttpMethod
+import io.zensoft.hootka.api.model.MimeType
 
 @Controller
 class SampleController {
+
+    @Stateless
+    @RequestMapping(method = HttpMethod.GET, value = ["/status"], produces = MimeType.TEXT_PLAIN)
+    fun status(): String {
+        return "Hello World"
+    }
 
     @Stateless
     @RequestMapping(method = HttpMethod.GET, value = ["/api/greet"])
@@ -19,11 +26,11 @@ class SampleController {
         return UserDto(firstName, request.lastName, request.age)
     }
 
-    @Stateless
-    @RequestMapping(method = HttpMethod.GET, value = ["/api/fail"])
-    fun fail() {
-        throw IllegalArgumentException()
-    }
+//    @Stateless
+//    @RequestMapping(method = HttpMethod.GET, value = ["/api/fail"])
+//    fun fail() {
+//        throw IllegalArgumentException()
+//    }
 
     @PreAuthorize("nobody()")
     @RequestMapping(method = HttpMethod.GET, value = ["/api/secure"])
