@@ -221,7 +221,7 @@ class UserController(
 
 ## Performance Comparison
 
-![Chart](docs/performance-chart.png)
+![Chart](docs/benchmark-results.png)
 
 ### Environment
 
@@ -231,74 +231,80 @@ Run: `$ java -Xmx512M -server -jar application.jar`
 
 Test: `$ wrk -t12 -c400 -d30s --latency http://host/api/user/current`
 
-### Tomcat
+### Tomcat Stateful
 
 ```
-Running 30s test @ http://localhost:8080/api/user
+Running 10s test @ http://192.168.88.69:8080/api/user
   12 threads and 400 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency    28.38ms   60.69ms   1.13s    91.46%
-    Req/Sec     3.77k     1.01k    8.55k    75.77%
-  Latency Distribution
-     50%    8.44ms
-     75%   25.17ms
-     90%   76.97ms
-     99%  312.14ms
-  1348558 requests in 30.10s, 272.89MB read
-Requests/sec:  44806.23
-Transfer/sec:      9.07MB
+    Latency    36.29ms   48.59ms 634.10ms   90.08%
+    Req/Sec     1.36k   331.86     2.11k    81.00%
+  162650 requests in 10.06s, 67.97MB read
+Requests/sec:  16161.54
+Transfer/sec:      6.75MB
 ```
 
-### Spring Reactive - Webflux
+### Spring Reactive - Webflux Stateful
 
 ```
-Running 30s test @ http://localhost:8080/api/user
+Running 10s test @ http://192.168.88.69:8080/api/user
   12 threads and 400 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency     7.41ms    4.38ms 228.41ms   87.16%
-    Req/Sec     4.70k   568.07     7.00k    86.56%
-  Latency Distribution
-     50%    5.52ms
-     75%    8.11ms
-     90%   13.07ms
-     99%   24.71ms
-  1684671 requests in 30.06s, 253.85MB read
-Requests/sec:  56051.02
-Transfer/sec:      8.45MB
+    Latency    23.39ms   10.60ms 349.25ms   97.41%
+    Req/Sec     1.41k   312.89     2.35k    90.20%
+  167079 requests in 10.06s, 54.18MB read
+Requests/sec:  16602.28
+Transfer/sec:      5.38MB
 ```
 
-### This
+### Hootka Stateful
 
 ```
-Running 30s test @ http://localhost:8080/api/user
+Running 10s test @ http://192.168.88.69:8080/api/user
   12 threads and 400 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency    45.78ms  120.34ms 637.34ms   90.29%
-    Req/Sec     7.09k     3.08k   19.56k    69.34%
-  Latency Distribution
-     50%    3.80ms
-     75%   11.65ms
-     90%  153.72ms
-     99%  562.01ms
-  2173245 requests in 30.05s, 493.27MB read
-Requests/sec:  72312.37
-Transfer/sec:     16.41MB
+    Latency     9.59ms   25.93ms 292.14ms   96.32%
+    Req/Sec     6.45k     1.61k   15.80k    85.36%
+  760602 requests in 10.08s, 150.15MB read
+Requests/sec:  75474.41
+Transfer/sec:     14.90MB
 ```
 
-### This (stateless)
+### Tomcat Stateless (stateless)
 
 ```
-Running 30s test @ http://localhost:8080/api/user
+Running 10s test @ http://192.168.88.69:8080/api/user
   12 threads and 400 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency     2.03ms    1.93ms  37.00ms   87.60%
-    Req/Sec    19.09k     5.14k   63.30k    69.77%
-  Latency Distribution
-     50%    1.36ms
-     75%    2.47ms
-     90%    4.15ms
-     99%    9.83ms
-  6852119 requests in 30.10s, 1.01GB read
-Requests/sec: 227648.43
-Transfer/sec:     34.52MB
+    Latency    21.04ms   23.13ms 345.78ms   90.22%
+    Req/Sec     2.02k   389.52     3.45k    88.59%
+  242890 requests in 10.10s, 41.97MB read
+Requests/sec:  24044.06
+Transfer/sec:      4.15MB
+```
+
+### Spring Reactive - Webflux Stateless
+
+```
+Running 10s test @ http://192.168.88.69:8080/api/user
+  12 threads and 400 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    12.24ms    6.01ms 264.77ms   91.92%
+    Req/Sec     2.68k   605.53     6.16k    89.63%
+  315032 requests in 10.10s, 38.16MB read
+Requests/sec:  31200.98
+Transfer/sec:      3.78MB
+```
+
+### Hootka Stateless
+
+```
+Running 10s test @ http://192.168.88.69:8080/api/user
+  12 threads and 400 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     3.68ms    5.44ms 122.10ms   96.34%
+    Req/Sec    10.53k     2.08k   20.32k    83.63%
+  1259626 requests in 10.07s, 153.76MB read
+Requests/sec: 125067.72
+Transfer/sec:     15.27MB
 ```
