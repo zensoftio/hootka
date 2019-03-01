@@ -8,7 +8,7 @@ import kotlin.reflect.KFunction
 
 class HttpHandlerMetaInfo(
     private val instance: Any,
-    private val handlerMethod: MethodHandle,
+    private val handlerMethod: KFunction<*>,
     val parameters: List<HandlerMethodParameter>,
     val stateless: Boolean = false,
     val status: HttpStatus = HttpStatus.OK,
@@ -18,6 +18,6 @@ class HttpHandlerMetaInfo(
     val preconditionExpression: String? = null
 ) {
 
-    fun execute(vararg args: Any?): Any? = handlerMethod.invokeWithArguments(instance, *args)
+    fun execute(vararg args: Any?): Any? = handlerMethod.call(instance, *args)
 
 }

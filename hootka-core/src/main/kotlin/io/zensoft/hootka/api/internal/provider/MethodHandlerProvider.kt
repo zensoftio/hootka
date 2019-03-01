@@ -36,15 +36,16 @@ class MethodHandlerProvider(
 
     fun getMethodHandler(path: String, httpMethod: HttpMethod): HttpHandlerMetaInfo {
         val stringMethod = httpMethod.toString()
-        return storage.entries
-            .firstOrNull { it.key.method == stringMethod && antPathMatcher.match(it.key.path, path) }?.value
-//            .firstOrNull { it.key.path == path && it.key.method == stringMethod }?.value
-            ?: throw HandlerMethodNotFoundException()
+        val handlerMethodKey = HandlerMethodKey(path, httpMethod.toString())
+//        return storage.entries
+//            .firstOrNull { it.key.method == stringMethod && antPathMatcher.match(it.key.path, path) }?.value
+////            .firstOrNull { it.key.path == path && it.key.method == stringMethod }?.value
+//            ?: throw HandlerMethodNotFoundException()
+        return storage[handlerMethodKey] ?: throw HandlerMethodNotFoundException()
     }
 
     @PostConstruct
     private fun init() {
-        val methodLookup = MethodHandles.publicLookup()
         val beans = context.getBeansWithAnnotation(Controller::class.java).values
         for (bean in beans) {
             val superPath = bean::class.findAnnotation<RequestMapping>()?.value?.single() ?: StringUtils.EMPTY
@@ -63,15 +64,12 @@ class MethodHandlerProvider(
                 } else {
                     listOf(superPath)
                 }
-                val paramTypes = function.parameters.map { it.type.jvmErasure.java }.drop(1)
-                val methodType = MethodType.methodType(function.returnType.jvmErasure.java, paramTypes)
-                val methodHandle = methodLookup.findVirtual(bean.javaClass, function.name, methodType)
                 for (path in paths) {
                     val key = HandlerMethodKey(path, pathAnnotation.method.toString())
                     if (storage.containsKey(key)) {
                         throw IllegalStateException("Mapping $path is already exists.")
                     } else {
-                        storage[key] = HttpHandlerMetaInfo(bean, methodHandle, parameterMapping,
+                        storage[key] = HttpHandlerMetaInfo(bean, function, parameterMapping,
                             stateless, status, type, path, pathAnnotation.method, preconditionExpression)
                     }
                 }
