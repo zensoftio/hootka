@@ -1,5 +1,0 @@
-dependencies {
-    compile project(':hootka-core')
-
-    compile('org.springframework.boot:spring-boot-starter-data-redis')
-}
