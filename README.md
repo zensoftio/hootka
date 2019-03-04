@@ -221,7 +221,7 @@ class UserController(
 
 ## Performance Comparison
 
-![Chart](docs/benchmark-results.png)
+![Chart](docs/benchmark-chart.png)
 
 ### Environment
 
