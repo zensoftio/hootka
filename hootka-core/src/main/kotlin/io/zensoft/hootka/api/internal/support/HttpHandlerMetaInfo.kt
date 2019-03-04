@@ -1,14 +1,13 @@
 package io.zensoft.hootka.api.internal.support
 
+import io.zensoft.hootka.api.internal.invoke.MethodInvocation
 import io.zensoft.hootka.api.model.HttpMethod
 import io.zensoft.hootka.api.model.HttpStatus
 import io.zensoft.hootka.api.model.MimeType
-import java.lang.invoke.MethodHandle
-import kotlin.reflect.KFunction
 
 class HttpHandlerMetaInfo(
     private val instance: Any,
-    private val handlerMethod: KFunction<*>,
+    private val handlerMethod: MethodInvocation,
     val parameters: List<HandlerMethodParameter>,
     val stateless: Boolean = false,
     val status: HttpStatus = HttpStatus.OK,
@@ -18,6 +17,6 @@ class HttpHandlerMetaInfo(
     val preconditionExpression: String? = null
 ) {
 
-    fun execute(vararg args: Any?): Any? = handlerMethod.call(instance, *args)
+    fun execute(args: Array<Any?>): Any? = handlerMethod.invoke(args)
 
 }

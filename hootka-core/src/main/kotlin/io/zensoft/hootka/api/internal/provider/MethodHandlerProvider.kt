@@ -2,6 +2,7 @@ package io.zensoft.hootka.api.internal.provider
 
 import io.zensoft.hootka.annotation.*
 import io.zensoft.hootka.api.exceptions.HandlerMethodNotFoundException
+import io.zensoft.hootka.api.internal.invoke.MethodInvocationProducer
 import io.zensoft.hootka.api.internal.support.HandlerMethodKey
 import io.zensoft.hootka.api.internal.support.HttpHandlerMetaInfo
 import io.zensoft.hootka.api.model.HttpMethod
@@ -9,6 +10,7 @@ import io.zensoft.hootka.api.model.HttpStatus
 import org.apache.commons.lang3.StringUtils
 import org.springframework.context.ApplicationContext
 import org.springframework.util.AntPathMatcher
+import java.lang.invoke.LambdaMetafactory
 import java.lang.invoke.MethodHandles
 import java.lang.invoke.MethodType
 import java.util.*
@@ -23,6 +25,8 @@ class MethodHandlerProvider(
     private val context: ApplicationContext,
     private val handlerParameterMapperProvider: HandlerParameterMapperProvider
 ) {
+
+    private val methodInvocationProducer = MethodInvocationProducer()
 
     private val antPathMatcher = AntPathMatcher()
     private val storage = TreeMap<HandlerMethodKey, HttpHandlerMetaInfo>(Comparator<HandlerMethodKey> { o1, o2 ->
@@ -59,6 +63,7 @@ class MethodHandlerProvider(
                 val type = pathAnnotation.produces
                 val stateless = statelessBeanAnnotation != null || function.findAnnotation<Stateless>() != null
                 val preconditionExpression = resolveAllowancePrecondition(globalPrecondition, function)
+                val methodInvocation = methodInvocationProducer.generateMethodInvocation(bean, function, parameterMapping)
                 val paths = if (pathAnnotation.value.isNotEmpty()) {
                     pathAnnotation.value.map { superPath + it }
                 } else {
@@ -69,7 +74,7 @@ class MethodHandlerProvider(
                     if (storage.containsKey(key)) {
                         throw IllegalStateException("Mapping $path is already exists.")
                     } else {
-                        storage[key] = HttpHandlerMetaInfo(bean, function, parameterMapping,
+                        storage[key] = HttpHandlerMetaInfo(bean, methodInvocation, parameterMapping,
                             stateless, status, type, path, pathAnnotation.method, preconditionExpression)
                     }
                 }

@@ -63,7 +63,7 @@ class BaseRequestProcessor(
 
     private fun handleRequest(handler: HttpHandlerMetaInfo, context: RequestContext) {
         val args = createHandlerArguments(handler, context)
-        val result = handler.execute(*args)
+        val result = handler.execute(args)
         if (!isRedirectResponse(context.response, result, handler)) {
             val responseBody = result?.let {
                 responseResolverProvider.createResponseBody(result, args, handler.contentType, context.response)
@@ -77,7 +77,7 @@ class BaseRequestProcessor(
             ?: exceptionHandlerProvider.getExceptionHandler(exception::class)
         if (exceptionHandler != null) {
             val args = createHandlerArguments(exceptionHandler, context, exception)
-            val result = exceptionHandler.execute(*args)
+            val result = exceptionHandler.execute(args)
             if (!isRedirectResponse(context.response, result, exceptionHandler)) {
                 try {
                     val responseBody = responseResolverProvider.createResponseBody(result!!, args, exceptionHandler.contentType, context.response)

@@ -3,6 +3,7 @@ package io.zensoft.hootka.api.internal.provider
 import io.zensoft.hootka.annotation.ControllerAdvice
 import io.zensoft.hootka.annotation.ExceptionHandler
 import io.zensoft.hootka.annotation.ResponseStatus
+import io.zensoft.hootka.api.internal.invoke.MethodInvocationProducer
 import io.zensoft.hootka.api.internal.support.ExceptionHandlerKey
 import io.zensoft.hootka.api.internal.support.HttpHandlerMetaInfo
 import io.zensoft.hootka.api.model.HttpMethod
@@ -19,6 +20,8 @@ class ExceptionHandlerProvider(
     private val handlerParameterMapperProvider: HandlerParameterMapperProvider
 ) {
 
+    private val methodInvocationProducer = MethodInvocationProducer()
+
     private val exceptionHandlers = HashMap<ExceptionHandlerKey, HttpHandlerMetaInfo>()
 
     fun getExceptionHandler(exceptionType: KClass<out Throwable>, contentType: MimeType = MimeType.APPLICATION_JSON): HttpHandlerMetaInfo? {
@@ -34,7 +37,8 @@ class ExceptionHandlerProvider(
                 val annotation = function.findAnnotation<ExceptionHandler>() ?: continue
                 val parameterMapping = handlerParameterMapperProvider.mapHandlerParameters(function)
                 val status = function.findAnnotation<ResponseStatus>()?.value ?: HttpStatus.OK
-                val handlerMetaInfo = HttpHandlerMetaInfo(advice, function, parameterMapping,
+                val methodInvocation = methodInvocationProducer.generateMethodInvocation(advice, function, parameterMapping)
+                val handlerMetaInfo = HttpHandlerMetaInfo(advice, methodInvocation, parameterMapping,
                     false, status, annotation.produces, "", HttpMethod.GET, null)
                 for (exceptionType in annotation.values) {
                     val key = ExceptionHandlerKey(exceptionType, annotation.produces.toString())
