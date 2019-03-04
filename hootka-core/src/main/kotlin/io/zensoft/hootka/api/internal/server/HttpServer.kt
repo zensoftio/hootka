@@ -4,6 +4,9 @@ import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.ChannelOption
 import io.netty.channel.EventLoopGroup
 import io.netty.channel.ServerChannel
+import io.netty.channel.WriteBufferWaterMark
+import io.netty.channel.epoll.Epoll
+import io.netty.channel.epoll.EpollChannelOption
 import io.netty.channel.epoll.EpollEventLoopGroup
 import io.netty.channel.epoll.EpollServerSocketChannel
 import io.netty.channel.nio.NioEventLoopGroup
@@ -33,8 +36,7 @@ class HttpServer(
         } else {
             this.port = port
         }
-        val osName = System.getProperty("os.name").toLowerCase()
-        if (osName.contains("nix")) {
+        if (Epoll.isAvailable()) {
             bossGroup = EpollEventLoopGroup(1)
             workerGroup = EpollEventLoopGroup(Runtime.getRuntime().availableProcessors())
             socketChannelClass = EpollServerSocketChannel::class.java
@@ -51,10 +53,16 @@ class HttpServer(
             val sb = ServerBootstrap()
                 .group(bossGroup, workerGroup)
                 .channel(socketChannelClass)
+                .option(ChannelOption.SO_REUSEADDR, true)
                 .childHandler(httpChannelInitializer)
                 .option(ChannelOption.SO_BACKLOG, 512)
                 .childOption(ChannelOption.SO_KEEPALIVE, true)
+                .childOption(ChannelOption.SO_REUSEADDR, true)
                 .childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, 3000)
+
+            if (Epoll.isAvailable()) {
+                sb.option(EpollChannelOption.SO_REUSEPORT, true)
+            }
 
             val future = sb.bind(port)
             log.info("Server is started on {} port.", port)

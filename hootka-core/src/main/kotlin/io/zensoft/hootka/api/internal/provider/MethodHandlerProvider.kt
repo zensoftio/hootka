@@ -33,12 +33,9 @@ class MethodHandlerProvider(
 
     fun getMethodHandler(path: String, httpMethod: HttpMethod): HttpHandlerMetaInfo {
         val stringMethod = httpMethod.toString()
-        val handlerMethodKey = HandlerMethodKey(path, httpMethod.toString())
-//        return storage.entries
-//            .firstOrNull { it.key.method == stringMethod && antPathMatcher.match(it.key.path, path) }?.value
-////            .firstOrNull { it.key.path == path && it.key.method == stringMethod }?.value
-//            ?: throw HandlerMethodNotFoundException()
-        return storage[handlerMethodKey] ?: throw HandlerMethodNotFoundException()
+        return storage.entries
+            .firstOrNull { it.key.method == stringMethod && antPathMatcher.match(it.key.path, path) }?.value
+            ?: throw HandlerMethodNotFoundException()
     }
 
     @PostConstruct
