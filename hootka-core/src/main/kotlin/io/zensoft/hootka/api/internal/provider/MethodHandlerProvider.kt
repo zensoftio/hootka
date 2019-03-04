@@ -29,14 +29,7 @@ class MethodHandlerProvider(
     private val methodInvocationProducer = MethodInvocationProducer()
 
     private val antPathMatcher = AntPathMatcher()
-    private val storage = TreeMap<HandlerMethodKey, HttpHandlerMetaInfo>(Comparator<HandlerMethodKey> { o1, o2 ->
-        val pathComparisonResult = o1.path.compareTo(o2.path)
-        if (pathComparisonResult == 0) {
-            o1.method.compareTo(o2.method)
-        } else {
-            pathComparisonResult
-        }
-    })
+    private val storage = hashMapOf<HandlerMethodKey, HttpHandlerMetaInfo>()
 
     fun getMethodHandler(path: String, httpMethod: HttpMethod): HttpHandlerMetaInfo {
         val stringMethod = httpMethod.toString()

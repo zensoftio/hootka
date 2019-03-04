@@ -16,7 +16,7 @@ class SampleController {
 
     @Stateless
     @RequestMapping(method = HttpMethod.GET, value = ["/api/greet"], produces = MimeType.TEXT_PLAIN)
-    fun greet(@RequestParam name: String): String {
+    fun greet(@RequestParam name: String?): String {
         return "Greetings, $name!!!"
     }
 
@@ -26,11 +26,11 @@ class SampleController {
         return UserDto(firstName, request.lastName, request.age)
     }
 
-//    @Stateless
-//    @RequestMapping(method = HttpMethod.GET, value = ["/api/fail"])
-//    fun fail() {
-//        throw IllegalArgumentException()
-//    }
+    @Stateless
+    @RequestMapping(method = HttpMethod.GET, value = ["/api/fail"])
+    fun fail() {
+        throw IllegalArgumentException()
+    }
 
     @PreAuthorize("nobody()")
     @RequestMapping(method = HttpMethod.GET, value = ["/api/secure"])

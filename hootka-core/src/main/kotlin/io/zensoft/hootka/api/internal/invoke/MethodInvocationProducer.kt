@@ -4,6 +4,7 @@ import io.zensoft.hootka.api.internal.support.HandlerMethodParameter
 import java.util.*
 import javax.tools.ToolProvider
 import kotlin.reflect.KFunction
+import kotlin.reflect.jvm.javaType
 
 class MethodInvocationProducer {
 
@@ -78,7 +79,12 @@ class MethodInvocationProducer {
         for (i in 0 until result.size) {
             args.add("arg$i")
         }
-        result.add("return bean.${function.name}(${args.joinToString()});")
+        if ("void" == function.returnType.javaType.typeName) {
+            result.add("bean.${function.name}(${args.joinToString()});")
+            result.add("return null;")
+        } else {
+            result.add("return bean.${function.name}(${args.joinToString()});")
+        }
         return result.joinToString("\n")
     }
 
