@@ -3,3 +3,4 @@ rootProject.name = 'hootka'
 include('hootka-autoconfigure')
 include('hootka-core')
 include('hootka-starter')
+include('hootka-sample')

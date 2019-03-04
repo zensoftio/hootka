@@ -6,10 +6,13 @@ import io.zensoft.hootka.api.internal.support.HttpHandlerMetaInfo
 import io.zensoft.hootka.api.internal.support.RequestContext
 import io.zensoft.hootka.api.internal.utils.DeserializationUtils
 import javax.validation.Valid
+import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.jvm.javaType
 
 class ValidMapper : HttpRequestMapper {
+
+    override fun getSupportedAnnotation(): KClass<out Annotation> = Valid::class
 
     override fun supportsAnnotation(annotations: List<Annotation>): Boolean {
         return annotations.size == 1 && annotations.find { it is Valid } != null

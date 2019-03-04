@@ -5,7 +5,7 @@ plugins {
 }
 
 allprojects {
-    group = 'io.zensoft.web'
+    group = 'io.zensoft.hootka'
     version = '0.1.0'
 
     repositories {
@@ -52,8 +52,18 @@ subprojects {
         compile("javax.el:javax.el-api:3.0.0")
         compile("org.glassfish:javax.el:3.0.0")
         compile("org.hibernate.validator:hibernate-validator:6.0.1.Final")
+
     }
 
+    task sourcesJar(type: Jar, dependsOn: classes) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier = 'javadoc'
+        from javadoc.destinationDir
+    }
     // Jar
     jar {
         manifest {
@@ -83,6 +93,9 @@ subprojects {
         publications {
             maven(MavenPublication) {
                 from components.java
+
+                artifact sourcesJar
+                artifact javadocJar
             }
         }
     }

@@ -1,5 +1,6 @@
 package io.zensoft.hootka.api.internal.server
 
+import io.netty.buffer.Unpooled
 import io.netty.buffer.Unpooled.EMPTY_BUFFER
 import io.netty.channel.ChannelHandler
 import io.netty.channel.ChannelHandlerContext
@@ -39,15 +40,13 @@ class HttpControllerHandler(
     @Suppress("OverridingDeprecatedMember")
     override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
         log.error("Something went wrong", cause)
-        writeResponse(ctx, null, NettyWrappedHttpResponse(HttpStatus.INTERNAL_SERVER_ERROR,
-            MimeType.TEXT_PLAIN, ("INTERNAL SERVER ERROR").toByteArray()))
+        ctx.close()
     }
 
     private fun writeResponse(ctx: ChannelHandlerContext, request: FullHttpRequest?, response: WrappedHttpResponse) {
         val content = response.getContent()
         val result = if (null != content) {
-            val buf = ctx.alloc().buffer(content.size)
-            buf.writeBytes(content)
+            val buf = Unpooled.wrappedBuffer(content)
             DefaultFullHttpResponse(HttpVersion.HTTP_1_1, response.getHttpStatus().value, buf)
         } else {
             DefaultFullHttpResponse(HttpVersion.HTTP_1_1, response.getHttpStatus().value)
@@ -67,7 +66,7 @@ class HttpControllerHandler(
             HttpUtil.setKeepAlive(result.headers(), HttpVersion.HTTP_1_1, true)
         }
 
-        ctx.writeAndFlush(result)
+        ctx.writeAndFlush(result, ctx.voidPromise())
     }
 
 }

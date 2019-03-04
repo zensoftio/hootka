@@ -1,18 +1,16 @@
 package io.zensoft.hootka.api.internal.response
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.zensoft.hootka.api.HttpResponseResolver
 import io.zensoft.hootka.api.WrappedHttpResponse
 import io.zensoft.hootka.api.model.MimeType
 
-class JsonResponseResolver(
-    private val jsonMapper: ObjectMapper
-) : HttpResponseResolver {
+class PlainTextResponseResolver: HttpResponseResolver {
 
-    override fun getContentType(): MimeType = MimeType.APPLICATION_JSON
+    override fun getContentType(): MimeType = MimeType.TEXT_PLAIN
 
     override fun resolveResponseBody(result: Any, handlerArgs: Array<Any?>, response: WrappedHttpResponse): ByteArray {
-        return jsonMapper.writeValueAsBytes(result)
+        if (result !is String) throw IllegalArgumentException("String return type should be for text/plain methods")
+        return result.toString().toByteArray()
     }
 
 }

@@ -7,12 +7,15 @@ import io.zensoft.hootka.api.internal.support.HandlerMethodParameter
 import io.zensoft.hootka.api.internal.support.HttpHandlerMetaInfo
 import io.zensoft.hootka.api.internal.support.RequestContext
 import javax.validation.Valid
+import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.jvm.javaType
 
 class RequestBodyMapper(
     private val jsonMapper: ObjectMapper
 ) : HttpRequestMapper {
+
+    override fun getSupportedAnnotation(): KClass<out Annotation> = RequestBody::class
 
     override fun supportsAnnotation(annotations: List<Annotation>): Boolean {
         return annotations.find { it is RequestBody } != null

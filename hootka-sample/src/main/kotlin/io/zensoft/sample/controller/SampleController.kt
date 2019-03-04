@@ -1,15 +1,22 @@
 package io.zensoft.sample.controller
 
 import io.zensoft.sample.domain.UserDto
-import io.zensoft.web.annotation.*
-import io.zensoft.web.api.model.HttpMethod
+import io.zensoft.hootka.annotation.*
+import io.zensoft.hootka.api.model.HttpMethod
+import io.zensoft.hootka.api.model.MimeType
 
 @Controller
 class SampleController {
 
     @Stateless
-    @RequestMapping(method = HttpMethod.GET, value = ["/api/greet"])
-    fun greet(@RequestParam name: String): String {
+    @RequestMapping(method = HttpMethod.GET, value = ["/status"], produces = MimeType.TEXT_PLAIN)
+    fun status(): String {
+        return "Hello World"
+    }
+
+    @Stateless
+    @RequestMapping(method = HttpMethod.GET, value = ["/api/greet"], produces = MimeType.TEXT_PLAIN)
+    fun greet(@RequestParam name: String?): String {
         return "Greetings, $name!!!"
     }
 

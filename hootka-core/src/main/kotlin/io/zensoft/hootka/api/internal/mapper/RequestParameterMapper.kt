@@ -11,12 +11,15 @@ import io.zensoft.hootka.api.internal.support.RequestContext
 import io.zensoft.hootka.api.internal.utils.NumberUtils
 import io.zensoft.hootka.api.model.HttpMethod
 import java.nio.charset.Charset
+import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.jvm.javaType
 
 class RequestParameterMapper : HttpRequestMapper {
 
     private val charset = Charset.forName("UTF-8")
+
+    override fun getSupportedAnnotation(): KClass<out Annotation> = RequestParam::class
 
     override fun supportsAnnotation(annotations: List<Annotation>): Boolean {
         return annotations.find { it is RequestParam } != null

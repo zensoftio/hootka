@@ -14,6 +14,7 @@ import io.zensoft.hootka.api.internal.resource.ClasspathResourceHandler
 import io.zensoft.hootka.api.internal.response.FileResponseResolver
 import io.zensoft.hootka.api.internal.response.FreemarkerResponseResolver
 import io.zensoft.hootka.api.internal.response.JsonResponseResolver
+import io.zensoft.hootka.api.internal.response.PlainTextResponseResolver
 import io.zensoft.hootka.api.internal.security.DefaultRememberMeService
 import io.zensoft.hootka.api.internal.security.DefaultSecurityProvider
 import io.zensoft.hootka.api.internal.security.SecurityExpressionExecutor
@@ -73,11 +74,11 @@ class ServerWebConfiguration(
     @ConditionalOnBean(UserDetailsService::class)
     fun rememberMeService(): RememberMeService
         = DefaultRememberMeService(
-            webConfig.security.rememberMeTokenName,
-            webConfig.security.rememberMeTokenMaxAge,
-            webConfig.security.rememberMeSalt,
-            applicationContext.getBean(UserDetailsService::class.java)
-        )
+        webConfig.security.rememberMeTokenName,
+        webConfig.security.rememberMeTokenMaxAge,
+        webConfig.security.rememberMeSalt,
+        applicationContext.getBean(UserDetailsService::class.java)
+    )
 
     @Bean
     @ConditionalOnBean(UserDetailsService::class)
@@ -85,7 +86,7 @@ class ServerWebConfiguration(
         = DefaultSecurityProvider(sessionStorage(), applicationContext.getBean(UserDetailsService::class.java), rememberMeService())
 
     @Bean
-    @ConditionalOnBean(SecurityExpressionInitializer::class)
+    @ConditionalOnBean(SecurityProvider::class, SecurityExpressionInitializer::class)
     fun securityExpressionExecutor(): SecurityExpressionExecutor
         = SecurityExpressionExecutor(securityProvider(), applicationContext.getBean(SecurityExpressionInitializer::class.java))
 
@@ -93,91 +94,80 @@ class ServerWebConfiguration(
 
     @Bean
     @ConditionalOnMissingBean(BaseRequestProcessor::class)
-    fun requestProcessor(): BaseRequestProcessor
-        = BaseRequestProcessor(
-            methodHandlerProvider(),
-            exceptionHandlerProvider(),
-            sessionHandler(),
-            handlerParameterMapperProvider(),
-            responseResolverProvider(),
-            staticResourcesProvider()
-        )
+    fun requestProcessor(): BaseRequestProcessor = BaseRequestProcessor(
+        methodHandlerProvider(),
+        exceptionHandlerProvider(),
+        sessionHandler(),
+        handlerParameterMapperProvider(),
+        responseResolverProvider(),
+        staticResourcesProvider()
+    )
 
     // Server
 
     @Bean
     @ConditionalOnMissingBean(HttpControllerHandler::class)
-    fun httpControllerHandler(): HttpControllerHandler
-        = HttpControllerHandler(requestProcessor())
+    fun httpControllerHandler(): HttpControllerHandler = HttpControllerHandler(requestProcessor())
 
     @Bean
     @ConditionalOnMissingBean(HttpChannelInitializer::class)
-    fun httpChannelInitializer(): HttpChannelInitializer
-        = HttpChannelInitializer(httpControllerHandler())
+    fun httpChannelInitializer(): HttpChannelInitializer = HttpChannelInitializer(httpControllerHandler())
 
     @Bean
     @ConditionalOnMissingBean(HttpServer::class)
-    fun httpServer(): HttpServer
-        = HttpServer(webConfig.port, httpChannelInitializer())
+    fun httpServer(): HttpServer = HttpServer(webConfig.port, httpChannelInitializer())
 
     // Request Mappers
 
     @Bean
     @ConditionalOnMissingBean(ModelAttributeMapper::class)
-    fun modelAttributeMapper(): ModelAttributeMapper
-        = ModelAttributeMapper()
+    fun modelAttributeMapper(): ModelAttributeMapper = ModelAttributeMapper()
 
     @Bean
     @ConditionalOnMissingBean(NettyMultipartFileMapper::class)
-    fun nettyMultipartFileMapper(): NettyMultipartFileMapper
-        = NettyMultipartFileMapper()
+    fun nettyMultipartFileMapper(): NettyMultipartFileMapper = NettyMultipartFileMapper()
 
     @Bean
     @ConditionalOnMissingBean(NettyMultipartObjectMapper::class)
-    fun nettyMultipartObjectMapper(): NettyMultipartObjectMapper
-        = NettyMultipartObjectMapper()
+    fun nettyMultipartObjectMapper(): NettyMultipartObjectMapper = NettyMultipartObjectMapper()
 
     @Bean
     @ConditionalOnMissingBean(PathVariableMapper::class)
-    fun pathVariableMapper(): PathVariableMapper
-        = PathVariableMapper()
+    fun pathVariableMapper(): PathVariableMapper = PathVariableMapper()
 
     @Bean
     @ConditionalOnBean(SecurityProvider::class)
-    fun principalMapper(): PrincipalMapper
-        = PrincipalMapper(securityProvider())
+    fun principalMapper(): PrincipalMapper = PrincipalMapper(securityProvider())
 
     @Bean
     @ConditionalOnMissingBean(RequestBodyMapper::class)
-    fun requestBodyMapper(): RequestBodyMapper
-        = RequestBodyMapper(objectMapper())
+    fun requestBodyMapper(): RequestBodyMapper = RequestBodyMapper(objectMapper())
 
     @Bean
     @ConditionalOnMissingBean(RequestParameterMapper::class)
-    fun requestParameterMapper(): RequestParameterMapper
-        = RequestParameterMapper()
+    fun requestParameterMapper(): RequestParameterMapper = RequestParameterMapper()
 
     @Bean
     @ConditionalOnMissingBean(ValidMapper::class)
-    fun validMapper(): ValidMapper
-        = ValidMapper()
+    fun validMapper(): ValidMapper = ValidMapper()
 
     // Response Resolvers
 
     @Bean
     @ConditionalOnMissingBean(FileResponseResolver::class)
-    fun fileResponseResolver(): FileResponseResolver
-        = FileResponseResolver()
+    fun fileResponseResolver(): FileResponseResolver = FileResponseResolver()
 
     @Bean
     @ConditionalOnMissingBean(FreemarkerResponseResolver::class)
-    fun freemarkerResponseResolver(): FreemarkerResponseResolver
-        = FreemarkerResponseResolver(freemarkerConfiguration())
+    fun freemarkerResponseResolver(): FreemarkerResponseResolver = FreemarkerResponseResolver(freemarkerConfiguration())
 
     @Bean
     @ConditionalOnMissingBean(JsonResponseResolver::class)
-    fun jsonResponseResolver(): JsonResponseResolver
-        = JsonResponseResolver(objectMapper())
+    fun jsonResponseResolver(): JsonResponseResolver = JsonResponseResolver(objectMapper())
+
+    @Bean
+    @ConditionalOnMissingBean(PlainTextResponseResolver::class)
+    fun plainTextResponseResolver(): PlainTextResponseResolver = PlainTextResponseResolver()
 
     // Static Resource Handlers
 
@@ -190,8 +180,7 @@ class ServerWebConfiguration(
 
     @Bean
     @ConditionalOnMissingBean(ValidationProvider::class)
-    fun defaultValidationProvider(): ValidationProvider
-        = DefaultValidationProvider()
+    fun defaultValidationProvider(): ValidationProvider = DefaultValidationProvider()
 
     // Providers
 
@@ -202,8 +191,7 @@ class ServerWebConfiguration(
 
     @Bean
     @ConditionalOnMissingBean(ResponseResolverProvider::class)
-    fun responseResolverProvider(): ResponseResolverProvider
-        = ResponseResolverProvider(applicationContext)
+    fun responseResolverProvider(): ResponseResolverProvider = ResponseResolverProvider(applicationContext)
 
     @Bean
     @ConditionalOnMissingBean(HandlerParameterMapperProvider::class)

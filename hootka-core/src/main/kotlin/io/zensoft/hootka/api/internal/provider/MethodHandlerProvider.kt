@@ -2,6 +2,7 @@ package io.zensoft.hootka.api.internal.provider
 
 import io.zensoft.hootka.annotation.*
 import io.zensoft.hootka.api.exceptions.HandlerMethodNotFoundException
+import io.zensoft.hootka.api.internal.invoke.MethodInvocationProducer
 import io.zensoft.hootka.api.internal.support.HandlerMethodKey
 import io.zensoft.hootka.api.internal.support.HttpHandlerMetaInfo
 import io.zensoft.hootka.api.model.HttpMethod
@@ -9,27 +10,26 @@ import io.zensoft.hootka.api.model.HttpStatus
 import org.apache.commons.lang3.StringUtils
 import org.springframework.context.ApplicationContext
 import org.springframework.util.AntPathMatcher
+import java.lang.invoke.LambdaMetafactory
+import java.lang.invoke.MethodHandles
+import java.lang.invoke.MethodType
 import java.util.*
 import javax.annotation.PostConstruct
 import kotlin.Comparator
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.declaredFunctions
 import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.jvm.jvmErasure
 
 class MethodHandlerProvider(
     private val context: ApplicationContext,
     private val handlerParameterMapperProvider: HandlerParameterMapperProvider
 ) {
 
+    private val methodInvocationProducer = MethodInvocationProducer()
+
     private val antPathMatcher = AntPathMatcher()
-    private val storage = TreeMap<HandlerMethodKey, HttpHandlerMetaInfo>(Comparator<HandlerMethodKey> { o1, o2 ->
-        val pathComparisonResult = o1.path.compareTo(o2.path)
-        if (pathComparisonResult == 0) {
-            o1.method.compareTo(o2.method)
-        } else {
-            pathComparisonResult
-        }
-    })
+    private val storage = hashMapOf<HandlerMethodKey, HttpHandlerMetaInfo>()
 
     fun getMethodHandler(path: String, httpMethod: HttpMethod): HttpHandlerMetaInfo {
         val stringMethod = httpMethod.toString()
@@ -53,6 +53,7 @@ class MethodHandlerProvider(
                 val type = pathAnnotation.produces
                 val stateless = statelessBeanAnnotation != null || function.findAnnotation<Stateless>() != null
                 val preconditionExpression = resolveAllowancePrecondition(globalPrecondition, function)
+                val methodInvocation = methodInvocationProducer.generateMethodInvocation(bean, function, parameterMapping)
                 val paths = if (pathAnnotation.value.isNotEmpty()) {
                     pathAnnotation.value.map { superPath + it }
                 } else {
@@ -63,7 +64,7 @@ class MethodHandlerProvider(
                     if (storage.containsKey(key)) {
                         throw IllegalStateException("Mapping $path is already exists.")
                     } else {
-                        storage[key] = HttpHandlerMetaInfo(bean, function, parameterMapping,
+                        storage[key] = HttpHandlerMetaInfo(bean, methodInvocation, parameterMapping,
                             stateless, status, type, path, pathAnnotation.method, preconditionExpression)
                     }
                 }
