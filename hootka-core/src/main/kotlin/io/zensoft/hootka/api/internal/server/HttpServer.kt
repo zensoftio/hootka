@@ -57,7 +57,6 @@ class HttpServer(
                 .childHandler(httpChannelInitializer)
                 .option(ChannelOption.SO_BACKLOG, 512)
                 .childOption(ChannelOption.SO_KEEPALIVE, true)
-                .childOption(ChannelOption.SO_REUSEADDR, true)
                 .childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, 3000)
 
             if (Epoll.isAvailable()) {
