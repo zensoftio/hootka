@@ -240,7 +240,7 @@ Run with java options:
 -XX:+UseCMSInitiatingOccupancyOnly
 ```
 
-Test: `$ wrk -t12 -c400 -d30s --latency http://192.168.88.53:8080/status`
+Test: `$ wrk -t12 -c400 -d30s --latency http://host/status`
 
 ### Tomcat Stateful
 
