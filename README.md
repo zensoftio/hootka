@@ -221,90 +221,131 @@ class UserController(
 
 ## Performance Comparison
 
-![Chart](docs/benchmark-chart.png)
+![Chart](docs/benchmark.png)
 
 ### Environment
 
 KVM, Ubuntu 18.04, 16384 MB RAM, 4 CPU
 
-Run: `$ java -Xmx512M -server -jar application.jar`
+Run with java options:
 
-Test: `$ wrk -t12 -c400 -d30s --latency http://host/api/user/current`
+```
+-server
+-Xmx2G
+-Xms2G
+-XX:+UseConcMarkSweepGC
+-XX:+UseParNewGC
+-XX:+CMSParallelRemarkEnabled
+-XX:CMSInitiatingOccupancyFraction=75
+-XX:+UseCMSInitiatingOccupancyOnly
+```
+
+Test: `$ wrk -t12 -c400 -d30s --latency http://host/status`
 
 ### Tomcat Stateful
 
 ```
-Running 10s test @ http://192.168.88.69:8080/api/user
+Running 30s test @ http://host/status
   12 threads and 400 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency    36.29ms   48.59ms 634.10ms   90.08%
-    Req/Sec     1.36k   331.86     2.11k    81.00%
-  162650 requests in 10.06s, 67.97MB read
-Requests/sec:  16161.54
-Transfer/sec:      6.75MB
+    Latency    42.74ms   54.69ms 542.25ms   83.67%
+    Req/Sec     1.65k   440.98     7.07k    68.87%
+  Latency Distribution
+     50%   21.11ms
+     75%   73.81ms
+     90%  119.04ms
+     99%  224.03ms
+  593167 requests in 30.07s, 216.76MB read
+Requests/sec:  19725.99
+Transfer/sec:      7.21MB
+```
+
+### Tomcat Stateless
+
+```
+Running 30s test @ http://host/status
+  12 threads and 400 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    44.99ms   79.26ms   1.16s    88.41%
+    Req/Sec     2.47k   593.50    12.03k    72.88%
+  Latency Distribution
+     50%   14.47ms
+     75%   48.50ms
+     90%  141.11ms
+     99%  369.88ms
+  885394 requests in 30.10s, 106.55MB read
+Requests/sec:  29417.08
+Transfer/sec:      3.54MB
 ```
 
 ### Spring Reactive - Webflux Stateful
 
 ```
-Running 10s test @ http://192.168.88.69:8080/api/user
+Running 30s test @ http://host/status
   12 threads and 400 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency    23.39ms   10.60ms 349.25ms   97.41%
-    Req/Sec     1.41k   312.89     2.35k    90.20%
-  167079 requests in 10.06s, 54.18MB read
-Requests/sec:  16602.28
-Transfer/sec:      5.38MB
-```
-
-### Hootka Stateful
-
-```
-Running 10s test @ http://192.168.88.69:8080/api/user
-  12 threads and 400 connections
-  Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency     9.59ms   25.93ms 292.14ms   96.32%
-    Req/Sec     6.45k     1.61k   15.80k    85.36%
-  760602 requests in 10.08s, 150.15MB read
-Requests/sec:  75474.41
-Transfer/sec:     14.90MB
-```
-
-### Tomcat Stateless (stateless)
-
-```
-Running 10s test @ http://192.168.88.69:8080/api/user
-  12 threads and 400 connections
-  Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency    21.04ms   23.13ms 345.78ms   90.22%
-    Req/Sec     2.02k   389.52     3.45k    88.59%
-  242890 requests in 10.10s, 41.97MB read
-Requests/sec:  24044.06
-Transfer/sec:      4.15MB
+    Latency    28.28ms    6.47ms 136.73ms   82.60%
+    Req/Sec     1.17k   104.02     3.64k    82.92%
+  Latency Distribution
+     50%   25.44ms
+     75%   30.77ms
+     90%   38.49ms
+     99%   48.70ms
+  419259 requests in 30.08s, 121.55MB read
+Requests/sec:  13937.08
+Transfer/sec:      4.04MB
 ```
 
 ### Spring Reactive - Webflux Stateless
 
 ```
-Running 10s test @ http://192.168.88.69:8080/api/user
+Running 30s test @ http://host/status
   12 threads and 400 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency    12.24ms    6.01ms 264.77ms   91.92%
-    Req/Sec     2.68k   605.53     6.16k    89.63%
-  315032 requests in 10.10s, 38.16MB read
-Requests/sec:  31200.98
-Transfer/sec:      3.78MB
+    Latency    15.79ms    7.47ms 117.62ms   87.12%
+    Req/Sec     2.17k   166.32     3.57k    77.18%
+  Latency Distribution
+     50%   12.23ms
+     75%   15.28ms
+     90%   25.83ms
+     99%   41.92ms
+  777917 requests in 30.11s, 67.51MB read
+Requests/sec:  25837.14
+Transfer/sec:      2.24MB
+```
+
+### Hootka Stateful
+
+```
+Running 30s test @ http://host/status
+  12 threads and 400 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     8.26ms   11.25ms 184.71ms   93.51%
+    Req/Sec     5.47k     1.19k   18.29k    81.83%
+  Latency Distribution
+     50%    4.24ms
+     75%    7.92ms
+     90%   14.78ms
+     99%   62.12ms
+  1961456 requests in 30.09s, 318.00MB read
+Requests/sec:  65181.72
+Transfer/sec:     10.57MB
 ```
 
 ### Hootka Stateless
 
 ```
-Running 10s test @ http://192.168.88.69:8080/api/user
+Running 30s test @ http://host/status
   12 threads and 400 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency     3.68ms    5.44ms 122.10ms   96.34%
-    Req/Sec    10.53k     2.08k   20.32k    83.63%
-  1259626 requests in 10.07s, 153.76MB read
-Requests/sec: 125067.72
-Transfer/sec:     15.27MB
+    Latency     4.53ms    3.36ms  76.77ms   87.34%
+    Req/Sec     8.23k     1.09k   31.32k    75.15%
+  Latency Distribution
+     50%    2.93ms
+     75%    4.71ms
+     90%    9.28ms
+     99%   16.95ms
+  2951774 requests in 30.08s, 256.17MB read
+Requests/sec:  98120.63
+Transfer/sec:      8.52MB
 ```
