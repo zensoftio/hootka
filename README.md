@@ -229,7 +229,7 @@ KVM, Ubuntu 18.04, 16384 MB RAM, 4 CPU
 
 Run with java options:
 
-```bash
+```
 -server
 -Xmx2G
 -Xms2G
