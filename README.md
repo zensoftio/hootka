@@ -244,7 +244,7 @@ Test: `$ wrk -t12 -c400 -d30s --latency http://host/status`
 
 ### Tomcat Stateful
 
-```bash
+```
 Running 30s test @ http://192.168.88.53:8080/status
   12 threads and 400 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
@@ -262,7 +262,7 @@ Transfer/sec:      7.21MB
 
 ### Tomcat Stateless
 
-```bash
+```
 Running 30s test @ http://192.168.88.53:8080/status
   12 threads and 400 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
@@ -280,7 +280,7 @@ Transfer/sec:      3.54MB
 
 ### Spring Reactive - Webflux Stateful
 
-```bash
+```
 Running 30s test @ http://192.168.88.53:8080/status
   12 threads and 400 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
@@ -298,7 +298,7 @@ Transfer/sec:      4.04MB
 
 ### Spring Reactive - Webflux Stateless
 
-```bash
+```
 Running 30s test @ http://192.168.88.53:8080/status
   12 threads and 400 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
@@ -316,7 +316,7 @@ Transfer/sec:      2.24MB
 
 ### Hootka Stateful
 
-```bash
+```
 Running 30s test @ http://192.168.88.53:8080/status
   12 threads and 400 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
@@ -334,7 +334,7 @@ Transfer/sec:     10.57MB
 
 ### Hootka Stateless
 
-```bash
+```
 Running 30s test @ http://192.168.88.53:8080/status
   12 threads and 400 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
