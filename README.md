@@ -227,12 +227,12 @@ class UserController(
 
 KVM, Ubuntu 18.04, 16384 MB RAM, 4 CPU
 
-Run java with options:
+Run with java options:
 
 ```bash
+-server
 -Xmx2G
 -Xms2G
--server
 -XX:+UseConcMarkSweepGC
 -XX:+UseParNewGC
 -XX:+CMSParallelRemarkEnabled
