@@ -245,7 +245,7 @@ Test: `$ wrk -t12 -c400 -d30s --latency http://host/status`
 ### Tomcat Stateful
 
 ```
-Running 30s test @ http://192.168.88.53:8080/status
+Running 30s test @ http://host/status
   12 threads and 400 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
     Latency    42.74ms   54.69ms 542.25ms   83.67%
@@ -263,7 +263,7 @@ Transfer/sec:      7.21MB
 ### Tomcat Stateless
 
 ```
-Running 30s test @ http://192.168.88.53:8080/status
+Running 30s test @ http://host/status
   12 threads and 400 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
     Latency    44.99ms   79.26ms   1.16s    88.41%
@@ -281,7 +281,7 @@ Transfer/sec:      3.54MB
 ### Spring Reactive - Webflux Stateful
 
 ```
-Running 30s test @ http://192.168.88.53:8080/status
+Running 30s test @ http://host/status
   12 threads and 400 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
     Latency    28.28ms    6.47ms 136.73ms   82.60%
@@ -299,7 +299,7 @@ Transfer/sec:      4.04MB
 ### Spring Reactive - Webflux Stateless
 
 ```
-Running 30s test @ http://192.168.88.53:8080/status
+Running 30s test @ http://host/status
   12 threads and 400 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
     Latency    15.79ms    7.47ms 117.62ms   87.12%
@@ -317,7 +317,7 @@ Transfer/sec:      2.24MB
 ### Hootka Stateful
 
 ```
-Running 30s test @ http://192.168.88.53:8080/status
+Running 30s test @ http://host/status
   12 threads and 400 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
     Latency     8.26ms   11.25ms 184.71ms   93.51%
@@ -335,7 +335,7 @@ Transfer/sec:     10.57MB
 ### Hootka Stateless
 
 ```
-Running 30s test @ http://192.168.88.53:8080/status
+Running 30s test @ http://host/status
   12 threads and 400 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
     Latency     4.53ms    3.36ms  76.77ms   87.34%
