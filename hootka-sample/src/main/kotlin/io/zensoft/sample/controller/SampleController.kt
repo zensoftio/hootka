@@ -45,6 +45,7 @@ class SampleController(
     }
 
     @Stateless
+
     @RequestMapping(method = HttpMethod.POST, value = ["/api/image"], produces = MimeType.TEXT_PLAIN)
     fun addImage(@MultipartFile(acceptExtensions = ["png"]) file: InMemoryFile): String {
         return "File \"${file.name}\" upload success!"
@@ -68,7 +69,7 @@ class SampleController(
         return UserDto("John", "Doe", 22)
     }
 
-    @RequestMapping(value = ["/login"], method = HttpMethod.POST)
+    @RequestMapping(method = HttpMethod.POST, value = ["/login"])
     fun login(@ModelAttribute @Valid authRequest: AuthRequest, response: WrappedHttpResponse,
               request: WrappedHttpRequest, session: HttpSession): String {
         val authDetails = SimpleAuthenticationDetails(
@@ -82,7 +83,7 @@ class SampleController(
         return "Login success!"
     }
 
-    @RequestMapping(value = ["/api/principal/secure"], method = HttpMethod.GET, produces = MimeType.TEXT_PLAIN)
+    @RequestMapping(method = HttpMethod.GET, value = ["/api/principal/secure"], produces = MimeType.TEXT_PLAIN)
     fun principalSecure(@Principal user: User?, request: WrappedHttpRequest, session: HttpSession): String {
         return if (null == user) {
             "Please, login."
