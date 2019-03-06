@@ -94,14 +94,22 @@ class ServerWebConfiguration(
 
     @Bean
     @ConditionalOnMissingBean(BaseRequestProcessor::class)
-    fun requestProcessor(): BaseRequestProcessor = BaseRequestProcessor(
-        methodHandlerProvider(),
-        exceptionHandlerProvider(),
-        sessionHandler(),
-        handlerParameterMapperProvider(),
-        responseResolverProvider(),
-        staticResourcesProvider()
-    )
+    fun requestProcessor(): BaseRequestProcessor {
+        val securityExpressionExecutor = if (applicationContext.containsBean("securityExpressionExecutor")) {
+            securityExpressionExecutor()
+        } else {
+            null
+        }
+        return BaseRequestProcessor(
+                methodHandlerProvider(),
+                exceptionHandlerProvider(),
+                sessionHandler(),
+                handlerParameterMapperProvider(),
+                responseResolverProvider(),
+                staticResourcesProvider(),
+                securityExpressionExecutor
+        )
+    }
 
     // Server
 
