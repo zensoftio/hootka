@@ -91,16 +91,16 @@ DefaultRememberMeService(rememberMeTokenName, rememberMeTokenMaxAge, rememberMeS
 | @ControllerAdvice |      CLASS      |                                          Describes class as handler post processors container                                     |
 | @ResponseStatus   | CLASS, FUNCTION |                                               Marks response with specific HTTP status                                            |
 | @Stateless        | CLASS, FUNCTION |                                       Marks handler that it does not require session resolution                                   |
-| @PreAuthorize     | CLASS, FUNCTION | Allows specification of filter method, whether incoming request allowed to be handled. Not working in combination with @Stateless |
 | @RequestMapping   | CLASS, FUNCTION |                                        Specifies path and method, which handler should process                                    |
 | @ExceptionHandler |     FUNCTION    |                                          Marks method, which handles specific exception type                                      |
 | @ModelAttribute   | VALUE_PARAMETER |                                 Marks that parameter is deserialized form-encoded content in request                              |
 | @MultipartFile    | VALUE_PARAMETER |                                           Marks that parameter is content of uploaded file                                        |
 | @MultipartObject  | VALUE_PARAMETER |                                          Marks that parameter is request's multipart content                                      |
 | @PathVariable     | VALUE_PARAMETER |                 Marks that parameter should be taken from request path, instead of specified wildcard (for example `{id}`)        |
-| @Principal        | VALUE_PARAMETER |                                           Marks that parameter contains user information                                          |
 | @RequestBody      | VALUE_PARAMETER |                                  Marks that parameter is deserialized JSON content from request                                   |
 | @RequestParam     | VALUE_PARAMETER |                                   Marks that parameter is a value of request's query parameter                                    |
+| @PreAuthorize     | CLASS, FUNCTION | Allows specification of filter method, whether incoming request allowed to be handled. Not working in combination with @Stateless |
+| @Principal        | VALUE_PARAMETER |                                           Marks that parameter contains user information                                          |
 
 #### Annotation parameters
 
@@ -204,9 +204,16 @@ class UserController(
     fun add(@RequestBody @Valid request: UserRequest): UserDto { // 9
         return UserDto(service.add(request))
     }
+    
+    @ResponseStatus(HttpStatus.OK) // 10
+    @RequestMapping(value = ["/{id}/avatar"], method = POST)
+    fun addAvatar(@PathVariable userId: Long, @MultipartFile(acceptExtensions = ["png","jpg"]) file: InMemoryFile) { // 11
+        service.addAvatar(userId, file)
+    }
 
 }
 ```
+Annotations @PreAuthorize and @Principal require security configuration.
 
 1) To declare controller add @Controller annotation from `io.zensoft.web.annotation` package 
 2) Common PreAuthorize method, used for all handlers in controller
@@ -217,6 +224,9 @@ class UserController(
 7) User information is available in this handler
 8) userId is taken from request path
 9) request field will be deserialized request JSON content
+10) set the status code of an HTTP response to header 
+11) use `io.zensoft.hootka.api.model.InMemoryFile` for upload file
+
 
 
 ## Performance Comparison
