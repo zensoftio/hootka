@@ -39,13 +39,16 @@ class SampleController(
     }
 
     @Stateless
+    @RequestMapping(method = HttpMethod.GET, value = ["/api/user"])
+    fun user(): UserDto = UserDto("Alice", "Johnson", 22)
+
+    @Stateless
     @RequestMapping(method = HttpMethod.POST, value = ["/api/user"])
     fun addUser(@ModelAttribute request: UserDto): UserDto {
         return UserDto(request.firstName, request.lastName, request.age)
     }
 
     @Stateless
-
     @RequestMapping(method = HttpMethod.POST, value = ["/api/image"], produces = MimeType.TEXT_PLAIN)
     fun addImage(@MultipartFile(acceptExtensions = ["png"]) file: InMemoryFile): String {
         return "File \"${file.name}\" upload success!"

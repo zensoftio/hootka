@@ -1,3 +1,6 @@
 dependencies {
     compile project(":hootka-starter")
 }
+
+bootJar.enabled = true
+jar.enabled = false

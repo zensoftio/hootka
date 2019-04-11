@@ -1,5 +1,6 @@
 package io.zensoft.hootka.api.internal.server
 
+import io.netty.buffer.ByteBufAllocator
 import io.netty.buffer.Unpooled
 import io.netty.buffer.Unpooled.EMPTY_BUFFER
 import io.netty.channel.ChannelHandler
