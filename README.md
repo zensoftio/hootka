@@ -1,4 +1,4 @@
-![Logo](docs/logo.png)
+![Logo](docs/readme.png)
 
 
 ## Installation
@@ -6,15 +6,15 @@
 Using gradle
 
 ```groovy
-compile("io.zensoft.web:spring-boot-netty:1.0.0")
+compile("io.zensoft.hootka:hootka-core:1.0.0")
 ```
 
 Using maven
 
 ```xml
 <dependency>
-    <groupId>io.zensoft.web</groupId>
-    <artifactId>spring-boot-netty</artifactId>
+    <groupId>io.zensoft.hootka</groupId>
+    <artifactId>hootka-core</artifactId>
     <version>1.0.0</version>
 </dependency>
 ```
