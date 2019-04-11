@@ -100,3 +100,5 @@ subprojects {
         }
     }
 }
+
+bootJar.enabled = false
