@@ -1,0 +1,61 @@
+package io.zensoft.hootka.api.internal.mapper
+
+import io.netty.buffer.ByteBufInputStream
+import io.netty.handler.codec.http.FullHttpRequest
+import io.netty.handler.codec.http.multipart.FileUpload
+import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder
+import io.netty.handler.codec.http.multipart.InterfaceHttpData
+import io.zensoft.hootka.annotation.MultipartFile
+import io.zensoft.hootka.api.HttpRequestMapper
+import io.zensoft.hootka.api.internal.support.HandlerMethodParameter
+import io.zensoft.hootka.api.internal.support.HttpHandlerMetaInfo
+import io.zensoft.hootka.api.internal.support.RequestContext
+import io.zensoft.hootka.api.model.InMemoryFile
+import kotlin.reflect.KClass
+import kotlin.reflect.KParameter
+import kotlin.reflect.jvm.javaType
+
+class NettyMultipartFileMapper : HttpRequestMapper {
+
+    override fun getSupportedAnnotation(): KClass<out Annotation> = MultipartFile::class
+
+    override fun supportsAnnotation(annotations: List<Annotation>): Boolean {
+        return annotations.find { it is MultipartFile } != null
+    }
+
+    override fun createValue(parameter: HandlerMethodParameter, context: RequestContext, handlerMethod: HttpHandlerMetaInfo): Any {
+        val multipartContent = HttpPostRequestDecoder(context.request.getWrappedRequest() as FullHttpRequest)
+        val files = mutableListOf<InMemoryFile>()
+        val annotation = parameter.annotation!! as MultipartFile
+        while (multipartContent.hasNext()) {
+            val content = multipartContent.next()
+            when (content.httpDataType) {
+                InterfaceHttpData.HttpDataType.FileUpload -> {
+                    val fileUpload = content as FileUpload
+                    val extension = extractExtension(fileUpload.filename)
+                    if (annotation.acceptExtensions.isNotEmpty() && !annotation.acceptExtensions.contains(extension)) {
+                        throw IllegalArgumentException("Unsupported file type with extension $extension")
+                    }
+                    files.add(InMemoryFile(fileUpload.filename, ByteBufInputStream(fileUpload.byteBuf)))
+                }
+                else -> throw IllegalStateException("Unprocessed data type")
+            }
+
+        }
+        return if (parameter.clazz.isArray) {
+            return files.toTypedArray()
+        } else {
+            files.first()
+        }
+    }
+
+    override fun mapParameter(parameter: KParameter, annotations: List<Annotation>): HandlerMethodParameter {
+        val annotation = annotations.find { it is MultipartFile }
+        return HandlerMethodParameter(parameter.name!!, parameter.type.javaType as Class<*>,
+            parameter.type.isMarkedNullable, annotation)
+    }
+
+    private fun extractExtension(fileName: String): String = fileName.substring(fileName.lastIndexOf('.') + 1)
+
+
+}
