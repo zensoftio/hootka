@@ -3,6 +3,16 @@
 
 ## Installation
 
+Connect repository
+
+```groovy
+repositories {
+    maven {
+        url "https://dl.bintray.com/zensoft/maven"
+    }
+}
+```
+
 Using gradle
 
 ```groovy
